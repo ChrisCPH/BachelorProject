@@ -1,0 +1,6 @@
+@RunningPlanner_HostAddress = http://localhost:5015
+
+GET {{RunningPlanner_HostAddress}}
+Accept: application/json
+
+###

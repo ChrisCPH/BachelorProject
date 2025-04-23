@@ -1,0 +1,29 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace RunningPlanner.Models
+{
+    public class Workout
+    {
+        [Key]
+        public int WorkoutID { get; set; }
+
+        public int TrainingPlanID { get; set; } // Foreign key to TrainingPlansModel
+
+        [MaxLength(50)]
+        public string Type { get; set; } = string.Empty; // e.g., "Strength", "Cross-Training"
+        
+        public int WeekNumber { get; set; } // Week number in the training plan
+
+        public DayOfWeek DayOfWeek { get; set; } // Day of the week for the workout. Sunday = 0, Monday = 1, ..., Saturday = 6
+
+        public TimeSpan? TimeOfDay { get; set; } // Time of day for the workout. hh:mm:ss format
+
+        public int? Duration { get; set; } // in seconds
+
+        public string? Notes { get; set; }
+
+        public string? Feedback { get; set; }
+
+        public bool Completed { get; set; } = false;
+    }
+}
