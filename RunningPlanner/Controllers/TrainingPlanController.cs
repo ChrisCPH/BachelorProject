@@ -16,16 +16,17 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> CreateTrainingPlan([FromBody] TrainingPlan trainingPlan)
+        public async Task<IActionResult> CreateTrainingPlan([FromQuery] int userId, [FromBody] TrainingPlan trainingPlan)
         {
             if (trainingPlan == null)
             {
                 return BadRequest("Training plan data is required.");
             }
 
-            var createdTrainingPlan = await _trainingPlanService.CreateTrainingPlanAsync(trainingPlan);
+            var createdTrainingPlan = await _trainingPlanService.CreateTrainingPlanAsync(trainingPlan, userId);
             return CreatedAtAction(nameof(GetTrainingPlanById), new { id = createdTrainingPlan.TrainingPlanID }, createdTrainingPlan);
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTrainingPlanById(int id)

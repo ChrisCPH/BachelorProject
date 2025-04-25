@@ -5,7 +5,7 @@ namespace RunningPlanner.Services
 {
     public interface ITrainingPlanService
     {
-        Task<TrainingPlan> CreateTrainingPlanAsync(TrainingPlan trainingPlan);
+        Task<TrainingPlan> CreateTrainingPlanAsync(TrainingPlan trainingPlan, int userId);
         Task<TrainingPlan?> GetTrainingPlanByIdAsync(int trainingPlanId);
         Task<List<TrainingPlan>?> GetAllTrainingPlansByUserAsync(int userId);
         Task<TrainingPlan> UpdateTrainingPlanAsync(TrainingPlan trainingPlan);
@@ -21,14 +21,14 @@ namespace RunningPlanner.Services
             _trainingPlanRepository = trainingPlanRepository;
         }
 
-        public async Task<TrainingPlan> CreateTrainingPlanAsync(TrainingPlan trainingPlan)
+        public async Task<TrainingPlan> CreateTrainingPlanAsync(TrainingPlan trainingPlan, int userId)
         {
             if (trainingPlan == null)
             {
                 throw new ArgumentNullException(nameof(trainingPlan), "Training plan data is required.");
             }
 
-            return await _trainingPlanRepository.AddTrainingPlanAsync(trainingPlan);
+            return await _trainingPlanRepository.AddTrainingPlanAsync(trainingPlan, userId);
         }
 
         public async Task<TrainingPlan?> GetTrainingPlanByIdAsync(int trainingPlanId)

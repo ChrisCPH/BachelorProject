@@ -22,8 +22,10 @@ namespace RunningPlanner.Models
 
         public string? Notes { get; set; }
 
-        public string? Feedback { get; set; }
-
         public bool Completed { get; set; } = false;
+
+        public List<Exercise> Exercises { get; set; } = new List<Exercise>(); // List of exercises in the workout
+
+        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

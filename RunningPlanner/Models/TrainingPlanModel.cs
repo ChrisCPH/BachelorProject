@@ -7,8 +7,6 @@ namespace RunningPlanner.Models
         [Key]
         public int TrainingPlanID { get; set; }
 
-        public int UserID { get; set; } // Foreign key to UsersModel
-
         [MaxLength(255)]
         public string Name { get; set; } = string.Empty;
 
@@ -18,6 +16,11 @@ namespace RunningPlanner.Models
 
         [MaxLength(50)]
         public string? Event { get; set; } // "Marathon", "Half Marathon", "5K" ...
+
+        [MaxLength(50)]
+        public string? GoalTime { get; set; } // e.g. "3:30:00" for a marathon
+
+        public List<UserTrainingPlan> UserTrainingPlans { get; set; } = new List<UserTrainingPlan>();
 
         public List<Run> Runs { get; set; } = new List<Run>();
 

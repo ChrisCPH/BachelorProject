@@ -13,9 +13,10 @@ namespace RunningPlanner.Services
     {
         Task<User> CreateUserAsync(User user);
         Task<User?> GetUserByIdAsync(int userId);
-        Task<string?> LoginAsync(string email, string password);
+        Task<string> LoginAsync(string email, string password);
+        Task<bool> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission);
     }
-    
+
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
@@ -26,7 +27,7 @@ namespace RunningPlanner.Services
         {
             _userRepository = userRepository;
             _passwordHasher = new PasswordHasher<User>();
-             _configuration = configuration;
+            _configuration = configuration;
         }
 
         public async Task<User> CreateUserAsync(User user)
@@ -41,6 +42,11 @@ namespace RunningPlanner.Services
             if (string.IsNullOrEmpty(user.Password))
             {
                 throw new ArgumentException("Password is required.");
+            }
+
+            if (user.Password.Length < 8 || !user.Password.Any(char.IsDigit))
+            {
+                throw new ArgumentException("Password must be at least 8 characters long and contain at least one number.");
             }
 
             var existingUser = await _userRepository.GetUserByEmailAsync(user.Email);
@@ -61,18 +67,18 @@ namespace RunningPlanner.Services
             return await _userRepository.GetUserByIdAsync(userId);
         }
 
-        public async Task<string?> LoginAsync(string email, string password)
+        public async Task<string> LoginAsync(string email, string password)
         {
             var user = await _userRepository.GetUserByEmailAsync(email);
             if (user == null)
             {
-                return null;
+                throw new InvalidOperationException("User with the specified email does not exist.");
             }
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
             if (result != PasswordVerificationResult.Success)
             {
-                return null;
+                throw new InvalidOperationException("Incorrect password.");
             }
 
             return GenerateJwtToken(user);
@@ -90,7 +96,6 @@ namespace RunningPlanner.Services
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("UserID", user.UserID.ToString()),
-                new Claim("PreferredUnit", user.PreferredUnit),
             };
 
             var token = new JwtSecurityToken(
@@ -102,6 +107,11 @@ namespace RunningPlanner.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<bool> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission)
+        {
+            return await _userRepository.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission);
         }
     }
 

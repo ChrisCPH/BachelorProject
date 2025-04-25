@@ -19,14 +19,14 @@ namespace RunningPlanner.Models
 
         public int? Duration { get; set; } // in seconds
 
-        public int? Distance { get; set; } // in kilometers
+        public double? Distance { get; set; } // in kilometers
 
         public string? Notes { get; set; }
-
-        public string? Feedback { get; set; }
 
         public bool Completed { get; set; } = false;
 
         public string? RouteID { get; set; } // ID of the route used for the run from mongoDB
+
+        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

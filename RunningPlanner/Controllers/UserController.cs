@@ -54,5 +54,17 @@ namespace RunningPlanner.Controllers
 
             return Ok(new { Message = "Login successful", Token = token });
         }
+
+        [HttpPost("addUserToTrainingPlan")]
+        public async Task<IActionResult> AddUserToTrainingPlan([FromQuery] int userId, [FromQuery] int trainingPlanId, [FromQuery] string permission)
+        {
+            var success = await _userService.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission);
+            if (!success)
+            {
+                return BadRequest("Failed to follow training plan.");
+            }
+
+            return Ok("User is now following the training plan");
+        }
     }
 }

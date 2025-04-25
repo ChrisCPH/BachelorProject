@@ -18,9 +18,6 @@ namespace RunningPlanner.Models
 
         public DateTime CreatedAt { get; set; }
 
-        [MaxLength(10)]
-        public string PreferredUnit { get; set; } = "km"; // kilometers or miles
-
-        public List<TrainingPlan> TrainingPlans { get; set; } = new List<TrainingPlan>();
+        public List<UserTrainingPlan> UserTrainingPlans { get; set; } = new List<UserTrainingPlan>();
      }
 }
