@@ -3,10 +3,10 @@ name: Run Tests
 on:
   push:
     branches:
-      - main # Adjust to match the branch you want to monitor
+      - main
   pull_request:
     branches:
-      - main # Adjust for PRs into your target branch
+      - main
 
 jobs:
   build-and-test:
