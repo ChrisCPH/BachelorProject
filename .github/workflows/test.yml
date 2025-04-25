@@ -1,0 +1,36 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main # Adjust to match the branch you want to monitor
+  pull_request:
+    branches:
+      - main # Adjust for PRs into your target branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up .NET environment
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Build the project
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      # Run tests
+      - name: Run Tests
+        run: dotnet test --no-build --configuration Release
