@@ -1,5 +1,6 @@
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
+
 namespace RunningPlanner.Tests
 {
     public class WorkoutRepositoryTests : TestBase

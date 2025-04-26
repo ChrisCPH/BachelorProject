@@ -1,0 +1,94 @@
+using Moq;
+using RunningPlanner.Models;
+using RunningPlanner.Repositories;
+using RunningPlanner.Services;
+
+namespace RunningPlanner.Tests.Services
+{
+    public class TrainingPlanServiceTests
+    {
+        private readonly Mock<ITrainingPlanRepository> _trainingPlanRepositoryMock;
+        private readonly TrainingPlanService _trainingPlanService;
+
+        public TrainingPlanServiceTests()
+        {
+            _trainingPlanRepositoryMock = new Mock<ITrainingPlanRepository>();
+            _trainingPlanService = new TrainingPlanService(_trainingPlanRepositoryMock.Object);
+        }
+
+        [Fact]
+        public async Task CreateTrainingPlanAsync_ShouldReturnCreatedTrainingPlan_WhenTrainingPlanIsValid()
+        {
+            var trainingPlan = new TrainingPlan { TrainingPlanID = 1 };
+            int userId = 1;
+            _trainingPlanRepositoryMock.Setup(repo => repo.AddTrainingPlanAsync(trainingPlan, userId)).ReturnsAsync(trainingPlan);
+
+            var result = await _trainingPlanService.CreateTrainingPlanAsync(trainingPlan, userId);
+
+            Assert.Equal(trainingPlan, result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.AddTrainingPlanAsync(trainingPlan, userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateTrainingPlanAsync_ShouldThrowArgumentNullException_WhenTrainingPlanIsNull()
+        {
+            int userId = 1;
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _trainingPlanService.CreateTrainingPlanAsync(null!, userId));
+        }
+
+        [Fact]
+        public async Task GetTrainingPlanByIdAsync_ShouldReturnTrainingPlan_WhenTrainingPlanExists()
+        {
+            var trainingPlan = new TrainingPlan { TrainingPlanID = 1 };
+            _trainingPlanRepositoryMock.Setup(repo => repo.GetTrainingPlanByIdAsync(trainingPlan.TrainingPlanID)).ReturnsAsync(trainingPlan);
+
+            var result = await _trainingPlanService.GetTrainingPlanByIdAsync(trainingPlan.TrainingPlanID);
+
+            Assert.Equal(trainingPlan, result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.GetTrainingPlanByIdAsync(trainingPlan.TrainingPlanID), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansByUserAsync_ShouldReturnTrainingPlans_WhenTrainingPlansExist()
+        {
+            int userId = 1;
+            var trainingPlans = new List<TrainingPlan> { new TrainingPlan { TrainingPlanID = 1 }, new TrainingPlan { TrainingPlanID = 2 } };
+            _trainingPlanRepositoryMock.Setup(repo => repo.GetAllTrainingPlansByUserAsync(userId)).ReturnsAsync(trainingPlans);
+
+            var result = await _trainingPlanService.GetAllTrainingPlansByUserAsync(userId);
+
+            Assert.Equal(trainingPlans, result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.GetAllTrainingPlansByUserAsync(userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateTrainingPlanAsync_ShouldReturnUpdatedTrainingPlan_WhenTrainingPlanIsValid()
+        {
+            var trainingPlan = new TrainingPlan { TrainingPlanID = 1 };
+            _trainingPlanRepositoryMock.Setup(repo => repo.UpdateTrainingPlanAsync(trainingPlan)).ReturnsAsync(trainingPlan);
+
+            var result = await _trainingPlanService.UpdateTrainingPlanAsync(trainingPlan);
+
+            Assert.Equal(trainingPlan, result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.UpdateTrainingPlanAsync(trainingPlan), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateTrainingPlanAsync_ShouldThrowArgumentNullException_WhenTrainingPlanIsNull()
+        {
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _trainingPlanService.UpdateTrainingPlanAsync(null!));
+        }
+
+        [Fact]
+        public async Task DeleteTrainingPlanAsync_ShouldReturnTrue_WhenTrainingPlanIsDeleted()
+        {
+            int trainingPlanId = 1;
+            _trainingPlanRepositoryMock.Setup(repo => repo.DeleteTrainingPlanAsync(trainingPlanId)).ReturnsAsync(true);
+
+            var result = await _trainingPlanService.DeleteTrainingPlanAsync(trainingPlanId);
+
+            Assert.True(result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.DeleteTrainingPlanAsync(trainingPlanId), Times.Once);
+        }
+    }
+}

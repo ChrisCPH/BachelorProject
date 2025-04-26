@@ -55,6 +55,12 @@ namespace RunningPlanner.Services
                 throw new InvalidOperationException($"A user with the email '{user.Email}' already exists.");
             }
 
+            var existingUsername = await _userRepository.GetUserByUsernameAsync(user.UserName);
+            if (existingUsername != null)
+            {
+                throw new InvalidOperationException($"A user with the username '{user.UserName}' already exists.");
+            }
+
             user.Password = _passwordHasher.HashPassword(user, user.Password);
 
             user.CreatedAt = DateTime.UtcNow;
