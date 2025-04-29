@@ -20,11 +20,26 @@ namespace RunningPlanner.Controllers
         {
             if (user == null)
             {
-                return BadRequest("User data is required.");
+                return BadRequest(new { message = "User data is required." });
             }
 
-            var createdUser = await _userService.CreateUserAsync(user);
-            return CreatedAtAction(nameof(GetUserById), new { id = createdUser.UserID }, createdUser);
+            try
+            {
+                var createdUser = await _userService.CreateUserAsync(user);
+                return CreatedAtAction(nameof(GetUserById), new { id = createdUser.UserID }, createdUser);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
@@ -43,16 +58,28 @@ namespace RunningPlanner.Controllers
         {
             if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Password))
             {
-                return BadRequest("Email and password are required.");
+                return BadRequest(new { message = "Email and password are required." });
             }
 
-            var token = await _userService.LoginAsync(loginRequest.Email, loginRequest.Password);
-            if (string.IsNullOrEmpty(token))
+            try
             {
-                return Unauthorized("Invalid email or password.");
-            }
+                var token = await _userService.LoginAsync(loginRequest.Email, loginRequest.Password);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Invalid email or password." });
+                }
 
-            return Ok(new { Message = "Login successful", Token = token });
+                return Ok(new { message = "Login successful", token });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpPost("addUserToTrainingPlan")]
