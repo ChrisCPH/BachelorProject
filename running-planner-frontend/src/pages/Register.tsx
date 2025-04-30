@@ -9,15 +9,11 @@ export default function Register() {
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({ resolver: zodResolver(RegisterSchema) });
     const navigate = useNavigate();
     const [apiError, setApiError] = useState("");
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     const onSubmit = async (data: RegisterFormData) => {
-        if (data.password !== data.confirmPassword) {
-            setApiError("Passwords do not match");
-            return;
-        }
-
         try {
-            const response = await fetch("http://localhost:5015/api/user/register", {
+            const response = await fetch(`${API_BASE_URL}/api/user/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
@@ -90,6 +86,34 @@ export default function Register() {
                             className="form-control"
                         />
                         {errors.confirmPassword && <div className="text-danger mt-1">{errors.confirmPassword.message}</div>}
+                    </div>
+
+                    <div className="mb-3">
+                        <label htmlFor="preferredDistance" className="form-label">Preferred Distance Unit</label>
+                        <select
+                            {...register("preferredDistance")}
+                            id="preferredDistance"
+                            className="form-control"
+                        >
+                            <option value="">Select a unit</option>
+                            <option value="km">Kilometers</option>
+                            <option value="mi">Miles</option>
+                        </select>
+                        {errors.preferredDistance && <div className="text-danger mt-1">{errors.preferredDistance.message}</div>}
+                    </div>
+
+                    <div className="mb-3">
+                        <label htmlFor="preferredWeight" className="form-label">Preferred Weight Unit</label>
+                        <select
+                            {...register("preferredWeight")}
+                            id="preferredWeight"
+                            className="form-control"
+                        >
+                            <option value="">Select a unit</option>
+                            <option value="kg">Kilograms</option>
+                            <option value="lbs">Pounds</option>
+                        </select>
+                        {errors.preferredWeight && <div className="text-danger mt-1">{errors.preferredWeight.message}</div>}
                     </div>
 
                     <button type="submit" className="btn btn-primary w-100">Register</button>

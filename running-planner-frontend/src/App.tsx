@@ -7,6 +7,7 @@ import TrainingPlanOverview from "./pages/TrainingPlanOverview.tsx";
 import RequireAuth from "./authentication/RequireAuth.tsx";
 import ProtectedLayout from "./components/ProtectedLayout.tsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
   return (

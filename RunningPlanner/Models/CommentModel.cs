@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace RunningPlanner.Models
 {
@@ -17,10 +18,13 @@ namespace RunningPlanner.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        [JsonIgnore]
         public User User { get; set; } = new User();
 
+        [JsonIgnore]
         public Run? Run { get; set; }
 
+        [JsonIgnore]
         public Workout? Workout { get; set; }
     }
 }

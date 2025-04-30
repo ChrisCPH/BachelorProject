@@ -7,16 +7,25 @@ export default function CreateTrainingPlan() {
   const { register, handleSubmit, formState: { errors } } = useForm<TrainingPlanFormData>();
   const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const onSubmit = async (data: TrainingPlanFormData) => {
     try {
-      const response = await fetch("http://localhost:5015/api/runningplan/create", {
+      const dataWithTimestamp: TrainingPlanFormData = {
+        ...data,
+        createdAt: new Date().toISOString(),
+        startDate: data.startDate === "" ? null : data.startDate,
+        event: data.event === "" ? null : data.event,
+        goalTime: data.goalTime === "" ? null : data.goalTime,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/trainingplan/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(dataWithTimestamp),
       });
 
       if (!response.ok) {
@@ -24,7 +33,7 @@ export default function CreateTrainingPlan() {
         throw new Error(errorData.message || "Failed to create plan");
       }
 
-      navigate("/dashboard");
+      navigate("/overview");
     } catch (error: any) {
       setApiError(error.message);
     }
@@ -44,8 +53,7 @@ export default function CreateTrainingPlan() {
 
         <div className="mb-3">
           <label className="form-label">Start Date</label>
-          <input type="date" {...register("startDate", { required: true })} className="form-control" />
-          {errors.startDate && <div className="text-danger">Start date is required</div>}
+          <input type="date" {...register("startDate")} className="form-control" />
         </div>
 
         <div className="mb-3">
@@ -56,12 +64,12 @@ export default function CreateTrainingPlan() {
 
         <div className="mb-3">
           <label className="form-label">Event</label>
-          <input {...register("event", { required: false })} className="form-control" />
+          <input {...register("event")} className="form-control" />
         </div>
 
         <div className="mb-3">
           <label className="form-label">Goal Time</label>
-          <input {...register("goalTime", { required: false })} className="form-control" />
+          <input {...register("goalTime")} className="form-control" />
         </div>
 
         <button type="submit" className="btn btn-primary">Create Plan</button>

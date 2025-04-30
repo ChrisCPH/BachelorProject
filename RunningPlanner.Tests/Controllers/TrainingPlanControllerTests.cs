@@ -29,7 +29,7 @@ namespace RunningPlanner.Tests.Controllers
                 .Setup(s => s.CreateTrainingPlanAsync(trainingPlan, userId))
                 .ReturnsAsync(trainingPlan);
 
-            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId.ToString())], "mock"));
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("UserID", userId.ToString())], "mock"));
 
             _trainingPlanController.ControllerContext = new ControllerContext
             {
@@ -84,7 +84,7 @@ namespace RunningPlanner.Tests.Controllers
                 .Setup(s => s.GetAllTrainingPlansByUserAsync(userId))
                 .ReturnsAsync(trainingPlans);
 
-            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId.ToString())], "mock"));
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("UserID", userId.ToString())], "mock"));
 
             _trainingPlanController.ControllerContext = new ControllerContext
             {
@@ -106,7 +106,7 @@ namespace RunningPlanner.Tests.Controllers
                 .Setup(s => s.GetAllTrainingPlansByUserAsync(userId))
                 .ReturnsAsync(new List<TrainingPlan>());
 
-            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId.ToString())], "mock"));
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("UserID", userId.ToString())], "mock"));
 
             _trainingPlanController.ControllerContext = new ControllerContext
             {

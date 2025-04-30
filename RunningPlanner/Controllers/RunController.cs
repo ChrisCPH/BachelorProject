@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RunningPlanner.Models;
 using RunningPlanner.Services;
@@ -6,6 +7,7 @@ namespace RunningPlanner.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RunController : ControllerBase
     {
         private readonly IRunService _runService;

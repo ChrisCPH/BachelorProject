@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace RunningPlanner.Models
 {
@@ -14,8 +15,10 @@ namespace RunningPlanner.Models
         [MaxLength(20)]
         public string Permission { get; set; } = "Viewer"; // Owner, Editor, Commenter, Viewer
 
+        [JsonIgnore]
         public TrainingPlan TrainingPlan { get; set; } = null!;
 
+        [JsonIgnore]
         public User User { get; set; } = null!;
     }
 }

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using RunningPlanner.Models;
 using RunningPlanner.Services;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace RunningPlanner.Controllers
 {
@@ -26,7 +25,7 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Training plan data is required.");
             }
 
-            var userIdClaim = User.FindFirst("sub") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("UserID");
             if (userIdClaim == null)
             {
                 return Unauthorized("User ID not found in token.");
@@ -52,7 +51,7 @@ namespace RunningPlanner.Controllers
         [HttpGet("user")]
         public async Task<IActionResult> GetAllTrainingPlansByUser()
         {
-            var userIdClaim = User.FindFirst("sub") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("UserID");
             if (userIdClaim == null)
             {
                 return Unauthorized("User ID not found in token.");
@@ -67,6 +66,7 @@ namespace RunningPlanner.Controllers
             }
             return Ok(trainingPlans);
         }
+
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateTrainingPlan([FromBody] TrainingPlan trainingPlan)
@@ -84,7 +84,7 @@ namespace RunningPlanner.Controllers
             return Ok(updatedTrainingPlan);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteTrainingPlan(int id)
         {
             var result = await _trainingPlanService.DeleteTrainingPlanAsync(id);

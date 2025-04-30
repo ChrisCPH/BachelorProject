@@ -1,7 +1,8 @@
 export type TrainingPlanFormData = {
     name: string;
-    startDate: string;
+    startDate?: string | null;
     duration: number; // in weeks
-    event: string;
-    goalTime: string;
+    event?: string | null;
+    goalTime?: string | null;
+    createdAt: string;
 };

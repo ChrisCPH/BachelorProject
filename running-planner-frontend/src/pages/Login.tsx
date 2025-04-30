@@ -11,10 +11,11 @@ export default function Login() {
     const navigate = useNavigate();
     const [apiError, setApiError] = useState("");
     const { login } = useAuth();
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     const onSubmit = async (data: LoginFormData) => {
         try {
-            const response = await fetch("http://localhost:5015/api/user/login", {
+            const response = await fetch(`${API_BASE_URL}/user/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),

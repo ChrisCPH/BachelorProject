@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace RunningPlanner.Models
 {
@@ -22,10 +23,13 @@ namespace RunningPlanner.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        [JsonIgnore]
         public List<UserTrainingPlan> UserTrainingPlans { get; set; } = new List<UserTrainingPlan>();
 
+        [JsonIgnore]
         public List<Run> Runs { get; set; } = new List<Run>();
 
+        [JsonIgnore]
         public List<Workout> Workouts { get; set; } = new List<Workout>();
     }
 }
