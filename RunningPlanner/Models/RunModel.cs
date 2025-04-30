@@ -9,6 +9,9 @@ namespace RunningPlanner.Models
         
         public int TrainingPlanID { get; set; } // Foreign key to TrainingPlansModel
 
+        [MaxLength(50)]
+        public string? Type { get; set; } // Type of run (e.g., easy, tempo, long, etc.)
+
         public int WeekNumber { get; set; } // Week number in the training plan
 
         public DayOfWeek DayOfWeek { get; set; } // Day of the week for the workout. Sunday = 0, Monday = 1, ..., Saturday = 6
@@ -26,6 +29,8 @@ namespace RunningPlanner.Models
         public bool Completed { get; set; } = false;
 
         public string? RouteID { get; set; } // ID of the route used for the run from mongoDB
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public List<Comment> Comments { get; set; } = new List<Comment>();
     }

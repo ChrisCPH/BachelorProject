@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using RunningPlanner.Models;
 using RunningPlanner.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace RunningPlanner.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class TrainingPlanController : ControllerBase
     {
         private readonly ITrainingPlanService _trainingPlanService;
@@ -16,17 +19,24 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> CreateTrainingPlan([FromQuery] int userId, [FromBody] TrainingPlan trainingPlan)
+        public async Task<IActionResult> CreateTrainingPlan([FromBody] TrainingPlan trainingPlan)
         {
             if (trainingPlan == null)
             {
                 return BadRequest("Training plan data is required.");
             }
 
+            var userIdClaim = User.FindFirst("sub") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
             var createdTrainingPlan = await _trainingPlanService.CreateTrainingPlanAsync(trainingPlan, userId);
             return CreatedAtAction(nameof(GetTrainingPlanById), new { id = createdTrainingPlan.TrainingPlanID }, createdTrainingPlan);
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTrainingPlanById(int id)
@@ -39,13 +49,21 @@ namespace RunningPlanner.Controllers
             return Ok(trainingPlan);
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetAllTrainingPlansByUser(int userId)
+        [HttpGet("user")]
+        public async Task<IActionResult> GetAllTrainingPlansByUser()
         {
+            var userIdClaim = User.FindFirst("sub") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
             var trainingPlans = await _trainingPlanService.GetAllTrainingPlansByUserAsync(userId);
             if (trainingPlans == null || !trainingPlans.Any())
             {
-                return NotFound("No training plans found for the specified user.");
+                return NotFound("No training plans found for the user.");
             }
             return Ok(trainingPlans);
         }

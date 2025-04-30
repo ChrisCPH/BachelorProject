@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RunningPlanner.Controllers;
@@ -22,9 +24,19 @@ namespace RunningPlanner.Tests.Controllers
         {
             var trainingPlan = new TrainingPlan { TrainingPlanID = 1 };
             int userId = 1;
-            _trainingPlanServiceMock.Setup(s => s.CreateTrainingPlanAsync(trainingPlan, userId)).ReturnsAsync(trainingPlan);
 
-            var result = await _trainingPlanController.CreateTrainingPlan(userId, trainingPlan);
+            _trainingPlanServiceMock
+                .Setup(s => s.CreateTrainingPlanAsync(trainingPlan, userId))
+                .ReturnsAsync(trainingPlan);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId.ToString())], "mock"));
+
+            _trainingPlanController.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _trainingPlanController.CreateTrainingPlan(trainingPlan);
 
             var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(nameof(_trainingPlanController.GetTrainingPlanById), createdAtActionResult.ActionName);
@@ -34,7 +46,7 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task CreateTrainingPlan_ShouldReturnBadRequest_WhenTrainingPlanIsNull()
         {
-            var result = await _trainingPlanController.CreateTrainingPlan(1, null!);
+            var result = await _trainingPlanController.CreateTrainingPlan(null!);
 
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Training plan data is required.", badRequestResult.Value);
@@ -65,10 +77,21 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task GetAllTrainingPlansByUser_ShouldReturnOk_WhenTrainingPlansExist()
         {
+            var userId = 1;
             var trainingPlans = new List<TrainingPlan> { new TrainingPlan { TrainingPlanID = 1 } };
-            _trainingPlanServiceMock.Setup(s => s.GetAllTrainingPlansByUserAsync(1)).ReturnsAsync(trainingPlans);
 
-            var result = await _trainingPlanController.GetAllTrainingPlansByUser(1);
+            _trainingPlanServiceMock
+                .Setup(s => s.GetAllTrainingPlansByUserAsync(userId))
+                .ReturnsAsync(trainingPlans);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId.ToString())], "mock"));
+
+            _trainingPlanController.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _trainingPlanController.GetAllTrainingPlansByUser();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(trainingPlans, okResult.Value);
@@ -77,12 +100,23 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task GetAllTrainingPlansByUser_ShouldReturnNotFound_WhenNoTrainingPlansFound()
         {
-            _trainingPlanServiceMock.Setup(s => s.GetAllTrainingPlansByUserAsync(1)).ReturnsAsync(new List<TrainingPlan>());
+            var userId = 1;
 
-            var result = await _trainingPlanController.GetAllTrainingPlansByUser(1);
+            _trainingPlanServiceMock
+                .Setup(s => s.GetAllTrainingPlansByUserAsync(userId))
+                .ReturnsAsync(new List<TrainingPlan>());
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId.ToString())], "mock"));
+
+            _trainingPlanController.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _trainingPlanController.GetAllTrainingPlansByUser();
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("No training plans found for the specified user.", notFoundResult.Value);
+            Assert.Equal("No training plans found for the user.", notFoundResult.Value);
         }
 
         [Fact]

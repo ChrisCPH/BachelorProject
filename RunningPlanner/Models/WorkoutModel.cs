@@ -24,6 +24,8 @@ namespace RunningPlanner.Models
 
         public bool Completed { get; set; } = false;
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public List<Exercise> Exercises { get; set; } = new List<Exercise>(); // List of exercises in the workout
 
         public List<Comment> Comments { get; set; } = new List<Comment>();

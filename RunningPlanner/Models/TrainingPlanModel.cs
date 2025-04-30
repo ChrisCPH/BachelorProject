@@ -20,6 +20,8 @@ namespace RunningPlanner.Models
         [MaxLength(50)]
         public string? GoalTime { get; set; } // e.g. "3:30:00" for a marathon
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public List<UserTrainingPlan> UserTrainingPlans { get; set; } = new List<UserTrainingPlan>();
 
         public List<Run> Runs { get; set; } = new List<Run>();

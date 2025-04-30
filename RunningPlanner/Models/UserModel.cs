@@ -18,6 +18,10 @@ namespace RunningPlanner.Models
 
         public DateTime CreatedAt { get; set; }
 
+        public string PreferredDistance { get; set; } = "km"; // km or miles
+
+        public string PreferredWeight { get; set; } = "kg"; // kg or lbs
+
         public List<UserTrainingPlan> UserTrainingPlans { get; set; } = new List<UserTrainingPlan>();
      }
 }

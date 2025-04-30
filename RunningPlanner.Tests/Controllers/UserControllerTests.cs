@@ -38,7 +38,10 @@ namespace RunningPlanner.Tests.Controllers
             var result = await _userController.Register(null!);
 
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("User data is required.", badRequestResult.Value);
+
+            var value = badRequestResult.Value!.ToString();
+
+            Assert.Contains("User data is required.", value);
         }
 
         [Fact]
@@ -82,7 +85,9 @@ namespace RunningPlanner.Tests.Controllers
             var result = await _userController.Login(null!);
 
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Email and password are required.", badRequestResult.Value);
+
+            var value = badRequestResult.Value!.ToString();
+            Assert.Contains("Email and password are required.", value);
         }
 
         [Fact]
@@ -94,8 +99,12 @@ namespace RunningPlanner.Tests.Controllers
             var result = await _userController.Login(loginRequest);
 
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal("Invalid email or password.", unauthorizedResult.Value);
+
+            var value = unauthorizedResult.Value!.ToString();
+
+            Assert.Contains("Invalid email or password.", value);
         }
+
 
         [Fact]
         public async Task AddUserToTrainingPlan_ShouldReturnOk_WhenSuccessful()

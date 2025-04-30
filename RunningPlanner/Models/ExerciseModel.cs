@@ -15,5 +15,7 @@ namespace RunningPlanner.Models
         public int? Sets { get; set; } // Number of sets for the exercise
 
         public int? Reps { get; set; } // Number of repetitions for the exercise
+
+        public int? Weight { get; set; } // Weight used for the exercise in kg
     }
 }
