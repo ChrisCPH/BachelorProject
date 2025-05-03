@@ -63,7 +63,7 @@ namespace RunningPlanner.Controllers
             return Ok(updatedRun);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteRun(int id)
         {
             var result = await _runService.DeleteRunAsync(id);

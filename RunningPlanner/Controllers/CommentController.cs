@@ -79,7 +79,7 @@ namespace RunningPlanner.Controllers
             return Ok(updatedComment);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteComment(int id)
         {
             var result = await _commentService.DeleteCommentAsync(id);

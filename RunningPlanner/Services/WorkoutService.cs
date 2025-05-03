@@ -7,7 +7,7 @@ namespace RunningPlanner.Services
     {
         Task<Workout> CreateWorkoutAsync(Workout workout);
         Task<Workout?> GetWorkoutByIdAsync(int workoutId);
-        Task<List<Workout>?> GetAllWorkoutsByTrainingPlanAsync(int runId);
+        Task<List<Workout>?> GetAllWorkoutsByTrainingPlanAsync(int trainingPlanId);
         Task<Workout> UpdateWorkoutAsync(Workout workout);
         Task<bool> DeleteWorkoutAsync(int workoutId);
     }
@@ -36,9 +36,9 @@ namespace RunningPlanner.Services
             return await _workoutRepository.GetWorkoutByIdAsync(workoutId);
         }
 
-        public async Task<List<Workout>?> GetAllWorkoutsByTrainingPlanAsync(int runId)
+        public async Task<List<Workout>?> GetAllWorkoutsByTrainingPlanAsync(int trainingPlanId)
         {
-            return await _workoutRepository.GetAllWorkoutsByTrainingPlanAsync(runId);
+            return await _workoutRepository.GetAllWorkoutsByTrainingPlanAsync(trainingPlanId);
         }
 
         public async Task<Workout> UpdateWorkoutAsync(Workout workout)

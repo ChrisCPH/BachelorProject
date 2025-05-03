@@ -40,13 +40,13 @@ namespace RunningPlanner.Controllers
             return Ok(workout);
         }
 
-        [HttpGet("run/{runId}")]
-        public async Task<IActionResult> GetAllWorkoutsByTrainingPlan(int runId)
+        [HttpGet("trainingPlan/{trainingPlanId}")]
+        public async Task<IActionResult> GetAllWorkoutsByTrainingPlan(int trainingPlanId)
         {
-            var workouts = await _workoutService.GetAllWorkoutsByTrainingPlanAsync(runId);
+            var workouts = await _workoutService.GetAllWorkoutsByTrainingPlanAsync(trainingPlanId);
             if (workouts == null || !workouts.Any())
             {
-                return NotFound("No workouts found for the specified run.");
+                return NotFound("No workouts found for the specified workout.");
             }
             return Ok(workouts);
         }
@@ -67,7 +67,7 @@ namespace RunningPlanner.Controllers
             return Ok(updatedWorkout);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteWorkout(int id)
         {
             var result = await _workoutService.DeleteWorkoutAsync(id);

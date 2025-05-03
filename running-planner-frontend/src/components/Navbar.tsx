@@ -23,12 +23,6 @@ export default function Navbar() {
           >
             Overview
           </NavLink>
-          <NavLink
-            to="/createPlan"
-            className={({ isActive }) => `nav-link text-white ${isActive ? "border-bottom border-primary" : ""}`}
-          >
-            Create Plan
-          </NavLink>
         </div>
 
         <div>

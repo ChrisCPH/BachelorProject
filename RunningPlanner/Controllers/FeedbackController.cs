@@ -67,7 +67,7 @@ namespace RunningPlanner.Controllers
             return Ok(updatedFeedback);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteFeedback(int id)
         {
             var result = await _feedbackService.DeleteFeedbackAsync(id);
