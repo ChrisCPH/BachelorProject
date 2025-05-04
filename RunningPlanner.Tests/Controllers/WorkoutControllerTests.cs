@@ -80,7 +80,7 @@ namespace RunningPlanner.Tests.Controllers
             var result = await _controller.GetAllWorkoutsByTrainingPlan(1);
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("No workouts found for the specified run.", notFoundResult.Value);
+            Assert.Equal("No workouts found for the specified workout.", notFoundResult.Value);
         }
 
         [Fact]
