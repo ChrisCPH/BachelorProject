@@ -17,11 +17,17 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRunRepository, RunRepository>();
 builder.Services.AddScoped<ITrainingPlanRepository, TrainingPlanRepository>();
 builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRunService, RunService>();
 builder.Services.AddScoped<ITrainingPlanService, TrainingPlanService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 builder.Services.AddAuthentication(options =>
 {
