@@ -4,8 +4,11 @@ import { TrainingPlan } from "../types/TrainingPlan";
 import { Workout } from "../types/Workout";
 import FormatPace from "../utils/FormatPace";
 import FormatDuration from "../utils/FormatDuration";
+import DatePicker from "react-datepicker";
+import { formatLocalDate, isSunday } from "../utils/FormatLocalDate";
+import { Link } from "react-router-dom";
 
-export default function CalendarPage() {
+export default function Calendar() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const [plans, setPlans] = useState<TrainingPlan[]>([]);
     const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
@@ -14,6 +17,8 @@ export default function CalendarPage() {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [calendar, setCalendar] = useState<Date[][]>([]);
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+    const [showStartDateModal, setShowStartDateModal] = useState(false);
+    const [newStartDate, setNewStartDate] = useState<string>("");
 
     useEffect(() => {
         fetchPlans();
@@ -25,6 +30,8 @@ export default function CalendarPage() {
             setSelectedPlan(plan);
             if (plan?.startDate) {
                 fetchPlanData(plan.trainingPlanID);
+            } else if (plan) {
+                setShowStartDateModal(true);
             }
         }
     }, [selectedPlanId]);
@@ -67,6 +74,40 @@ export default function CalendarPage() {
         }
     };
 
+    const updatePlanStartDate = async () => {
+        if (!selectedPlan || !newStartDate) return;
+
+        try {
+            const updatedPlan = {
+                ...selectedPlan,
+                startDate: newStartDate
+            };
+
+            const response = await fetch(`${API_BASE_URL}/trainingplan/update`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify(updatedPlan),
+            });
+
+            if (response.ok) {
+                const updatedPlanData = await response.json();
+                setSelectedPlan(updatedPlanData);
+                setPlans(plans.map(plan =>
+                    plan.trainingPlanID === updatedPlanData.trainingPlanID ? updatedPlanData : plan
+                ));
+                setShowStartDateModal(false);
+                fetchPlanData(updatedPlanData.trainingPlanID);
+            } else {
+                console.error("Failed to update plan");
+            }
+        } catch (error) {
+            console.error("Error updating plan:", error);
+        }
+    };
+
     const generateCalendar = (currentMonth: Date) => {
         const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
         const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
@@ -106,7 +147,48 @@ export default function CalendarPage() {
         });
     };
 
+    const handleComplete = async (
+        item: Run | Workout,
+        type: "run" | "workout",
+        completed: boolean
+    ) => {
+        const itemId = type === "run" ? (item as Run).runID : (item as Workout).workoutID;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/${type}/complete/${itemId}`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(completed),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update ${type} completion status. Status: ${response.status}`);
+            }
+
+            if (type === "run") {
+                setRuns(prevRuns =>
+                    prevRuns.map(run =>
+                        run.runID === itemId ? { ...run, completed } : run
+                    )
+                );
+            } else {
+                setWorkouts(prevWorkouts =>
+                    prevWorkouts.map(workout =>
+                        workout.workoutID === itemId ? { ...workout, completed } : workout
+                    )
+                );
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const renderCell = (date: Date) => {
+        if (!selectedPlan?.startDate) return null;
+
         const runsOnDate = runs.filter(
             (r) =>
                 r.weekNumber === getWeekNumber(date) && r.dayOfWeek === date.getDay()
@@ -119,7 +201,6 @@ export default function CalendarPage() {
         const isStartDate =
             selectedPlan?.startDate &&
             new Date(selectedPlan.startDate).toDateString() === date.toDateString();
-
 
         const weeksFromStart = selectedPlan?.duration || 0;
         const endDate = selectedPlan?.startDate
@@ -174,19 +255,37 @@ export default function CalendarPage() {
                     {runsOnDate.length > 0 && (
                         <div className="text-white">
                             {runsOnDate.map((run, index) => (
-                                <div key={index}>
-                                    <div>
-                                        <strong>Run {index + 1}
-                                            {run.completed && (
-                                                <span className="text-white">✅</span>
-                                            )}
-                                        </strong>
+                                <div key={index} className="mb-2">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Run {index + 1}</strong>
+                                            <div
+                                                className={`custom-checkbox mt-2 ${run.completed ? "checked" : ""}`}
+                                                onClick={() => {
+                                                    const newStatus = !run.completed;
+                                                    handleComplete(run, "run", newStatus);
+                                                }}
+                                                style={{
+                                                    width: "20px",
+                                                    height: "20px",
+                                                    border: "2px solid #ccc",
+                                                    borderRadius: "2px",
+                                                    cursor: "pointer",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    backgroundColor: run.completed ? "green" : "transparent"
+                                                }}
+                                            >
+                                                {run.completed && <span style={{ color: "white" }}>✅</span>}
+                                            </div>
+                                            {typeof run.timeOfDay === "string" && <div>{run.timeOfDay}</div>}
+                                            {run.type && <div>Type: {run.type}</div>}
+                                            {typeof run.distance === "number" && <div>Distance: {run.distance} km</div>}
+                                            {typeof run.pace === "number" && <div>Pace: {FormatPace(run.pace)}</div>}
+                                            {typeof run.duration === "number" && <div>Duration: {FormatDuration(run.duration)} min</div>}
+                                        </div>
                                     </div>
-                                    {run.type && <div>Type: {run.type}</div>}
-                                    {typeof run.distance === "number" && <div>Distance: {run.distance} km</div>}
-                                    {typeof run.pace === "number" && <div>Pace: {FormatPace(run.pace)}</div>}
-                                    {typeof run.duration === "number" && <div>Duration: {FormatDuration(run.duration)} min</div>}
-
                                 </div>
                             ))}
                         </div>
@@ -195,16 +294,38 @@ export default function CalendarPage() {
                     {workoutsOnDate.length > 0 && (
                         <div className="text-white">
                             {workoutsOnDate.map((workout, index) => (
-                                <div key={index}>
-                                    <div>
-                                        <strong>Workout {index + 1}
-                                            {workout.completed && (
-                                                <span className="text-white">✅</span>
-                                            )}
-                                        </strong>
+                                <div key={index} className="mb-2">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Workout {index + 1}</strong>
+                                            <div
+                                                className={`custom-checkbox mt-2 ${workout.completed ? "checked" : ""}`}
+                                                onClick={() => {
+                                                    const newStatus = !workout.completed;
+                                                    handleComplete(workout, "workout", newStatus);
+                                                }}
+                                                style={{
+                                                    width: "20px",
+                                                    height: "20px",
+                                                    border: "2px solid #ccc",
+                                                    borderRadius: "2px",
+                                                    cursor: "pointer",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    backgroundColor: workout.completed ? "green" : "transparent"
+                                                }}
+                                            >
+                                                {workout.completed && <span style={{ color: "white" }}>✅</span>}
+                                            </div>
+                                            {typeof workout.timeOfDay === "string" && <div>{workout.timeOfDay}</div>}
+                                            {workout.type && <div>Type: {workout.type}</div>}
+                                            {typeof workout.duration === "number" && <div>Duration: {FormatDuration(workout.duration)} min</div>}
+                                            <Link to={`/exercises/${workout.workoutID}`}>
+                                                <button className="btn btn-sm btn-outline-light mt-2">View Exercises</button>
+                                            </Link>
+                                        </div>
                                     </div>
-                                    {workout.type && <div>Type: {workout.type}</div>}
-                                    {typeof workout.duration === "number" && <div>Duration: {FormatDuration(workout.duration)} min</div>}
                                 </div>
                             ))}
                         </div>
@@ -213,7 +334,6 @@ export default function CalendarPage() {
             </td>
         );
     };
-
 
     const getWeekNumber = (date: Date): number => {
         if (!selectedPlan?.startDate) return 0;
@@ -281,6 +401,53 @@ export default function CalendarPage() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {showStartDateModal && (
+                <div className="modal show" style={{ display: 'block' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content bg-dark text-white">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Set Start Date</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close btn-close-white"
+                                    onClick={() => setShowStartDateModal(false)}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Please select a start date for your training plan:</p>
+                                <DatePicker
+                                    selected={newStartDate ? new Date(newStartDate) : null}
+                                    onChange={(date: Date | null) => {
+                                        setNewStartDate(date ? formatLocalDate(date.toISOString()) : "");
+                                    }}
+                                    filterDate={isSunday}
+                                    className="form-control"
+                                    dateFormat="yyyy-MM-dd"
+                                    placeholderText="Select a Sunday"
+                                />
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowStartDateModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={updatePlanStartDate}
+                                    disabled={!newStartDate}
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

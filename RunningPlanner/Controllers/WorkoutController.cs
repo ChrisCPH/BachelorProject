@@ -77,5 +77,20 @@ namespace RunningPlanner.Controllers
             }
             return NoContent();
         }
+
+        [HttpPatch("complete/{id}")]
+        public async Task<IActionResult> UpdateWorkoutCompletedStatus(int id, [FromBody] bool completed)
+        {
+            var workout = await _workoutService.GetWorkoutByIdAsync(id);
+            if (workout == null)
+            {
+                return NotFound("Workout not found.");
+            }
+
+            workout.Completed = completed;
+            var updatedWorkout = await _workoutService.UpdateWorkoutAsync(workout);
+
+            return Ok(updatedWorkout);
+        }
     }
 }

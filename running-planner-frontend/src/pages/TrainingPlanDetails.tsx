@@ -190,6 +190,49 @@ export default function TrainingPlanDetails() {
         }
     };
 
+    const handleComplete = async (
+        item: Run | Workout,
+        type: "run" | "workout",
+        completed: boolean
+    ) => {
+        const itemId = type === "run" ? (item as Run).runID : (item as Workout).workoutID;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/${type}/complete/${itemId}`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(completed),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update ${type} completion status. Status: ${response.status}`);
+            }
+
+            setSchedule((prev) => {
+                const updated = { ...prev };
+                const week = type === "run" ? (item as Run).weekNumber : (item as Workout).weekNumber;
+                const day = type === "run" ? (item as Run).dayOfWeek : (item as Workout).dayOfWeek;
+
+                updated[week][day] = updated[week][day].map((d) => {
+                    if (type === "run" && (d.data as Run).runID === itemId) {
+                        return { ...d, data: { ...d.data, completed } };
+                    }
+                    if (type === "workout" && (d.data as Workout).workoutID === itemId) {
+                        return { ...d, data: { ...d.data, completed } };
+                    }
+                    return d;
+                });
+
+                return updated;
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
         <div className="container mt-5 text-light">
             <h2>Training Plan Details</h2>
@@ -372,7 +415,27 @@ export default function TrainingPlanDetails() {
                                                                             title="Delete"
                                                                         >
                                                                             <i className="fas fa-trash text-light"></i>
-                                                                        </button>
+                                                                        </button>                                                                   
+                                                                        <div
+                                                                            className={`custom-checkbox mt-2 ${item.data.completed ? "checked" : ""}`}
+                                                                            onClick={() => {
+                                                                                const newStatus = !item.data.completed;
+                                                                                handleComplete(item.data, item.type, newStatus);
+                                                                            }}
+                                                                            style={{
+                                                                                width: "20px",
+                                                                                height: "20px",
+                                                                                border: "2px solid #ccc",
+                                                                                borderRadius: "2px",
+                                                                                cursor: "pointer",
+                                                                                display: "flex",
+                                                                                alignItems: "center",
+                                                                                justifyContent: "center",
+                                                                                backgroundColor: item.data.completed ? "green" : "transparent"
+                                                                            }}
+                                                                        >
+                                                                            {item.data.completed && <span style={{ color: "white" }}>✅</span>}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -390,6 +453,6 @@ export default function TrainingPlanDetails() {
                     );
                 })}
             </div>
-        </div>
+        </div >
     );
 }

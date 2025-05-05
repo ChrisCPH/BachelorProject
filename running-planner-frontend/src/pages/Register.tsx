@@ -111,7 +111,7 @@ export default function Register() {
                         >
                             <option value="">Select a unit</option>
                             <option value="kg">Kilograms</option>
-                            <option value="lbs">Pounds</option>
+                            <option value="lb">Pounds</option>
                         </select>
                         {errors.preferredWeight && <div className="text-danger mt-1">{errors.preferredWeight.message}</div>}
                     </div>

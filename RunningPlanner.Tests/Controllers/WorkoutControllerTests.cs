@@ -135,5 +135,36 @@ namespace RunningPlanner.Tests.Controllers
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Workout not found.", notFoundResult.Value);
         }
+
+        [Fact]
+        public async Task UpdateWorkoutCompletedStatus_ReturnsOk_WhenWorkoutIsUpdated()
+        {
+            var workout = new Workout { WorkoutID = 1, Completed = false };
+            var updatedWorkout = new Workout { WorkoutID = 1, Completed = true };
+
+            _workoutServiceMock.Setup(s => s.GetWorkoutByIdAsync(workout.WorkoutID))
+                .ReturnsAsync(workout);
+            _workoutServiceMock.Setup(s => s.UpdateWorkoutAsync(workout))
+                .ReturnsAsync(updatedWorkout);
+
+            var result = await _controller.UpdateWorkoutCompletedStatus(workout.WorkoutID, true);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(updatedWorkout, okResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateWorkoutCompletedStatus_ReturnsNotFound_WhenWorkoutDoesNotExist()
+        {
+            var workoutId = 1;
+
+            _workoutServiceMock.Setup(s => s.GetWorkoutByIdAsync(workoutId))
+                .ReturnsAsync((Workout)null!);
+
+            var result = await _controller.UpdateWorkoutCompletedStatus(workoutId, true);
+
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Workout not found.", notFoundResult.Value);
+        }
     }
 }

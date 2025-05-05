@@ -73,5 +73,20 @@ namespace RunningPlanner.Controllers
             }
             return NoContent();
         }
+
+        [HttpPatch("complete/{id}")]
+        public async Task<IActionResult> UpdateRunCompletedStatus(int id, [FromBody] bool completed)
+        {
+            var run = await _runService.GetRunByIdAsync(id);
+            if (run == null)
+            {
+                return NotFound("Run not found.");
+            }
+
+            run.Completed = completed;
+            var updatedRun = await _runService.UpdateRunAsync(run);
+
+            return Ok(updatedRun);
+        }
     }
 }

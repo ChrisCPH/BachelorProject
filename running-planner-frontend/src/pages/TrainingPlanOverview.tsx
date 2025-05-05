@@ -5,6 +5,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { TrainingPlan } from "../types/TrainingPlan";
 import { TrainingPlanFormData } from "../schemas/TrainingPlanSchema";
+import { formatLocalDate, isSunday } from "../utils/FormatLocalDate";
 
 export default function TrainingPlanOverview() {
 	const [trainingPlans, setTrainingPlans] = useState<TrainingPlan[]>([]);
@@ -22,7 +23,6 @@ export default function TrainingPlanOverview() {
 		watch
 	} = useForm<TrainingPlanFormData>();
 
-	// Watch the startDate field for the create form
 	const startDate = watch("startDate");
 
 	useEffect(() => {
@@ -144,18 +144,6 @@ export default function TrainingPlanOverview() {
 		} catch (error) {
 			console.error(error);
 		}
-	};
-
-	const isSunday = (date: Date) => {
-		return date.getDay() === 0;
-	};
-
-	const formatLocalDate = (dateString: string) => {
-		const date = new Date(dateString);
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
 	};
 
 	return (
