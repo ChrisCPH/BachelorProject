@@ -23,6 +23,13 @@ export default function Navbar() {
           >
             Overview
           </NavLink>
+
+          <NavLink
+            to="/calendar"
+            className={({ isActive }) => `nav-link text-white ${isActive ? "border-bottom border-primary" : ""}`}
+          >
+            Calendar
+          </NavLink>
         </div>
 
         <div>

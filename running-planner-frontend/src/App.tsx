@@ -3,12 +3,14 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import Landing from "./pages/Welcome.tsx";
 import TrainingPlanOverview from "./pages/TrainingPlanOverview.tsx";
+import TrainingPlanDetails from "./pages/TrainingPlanDetails.tsx";
+import WorkoutDetails from "./pages/WorkoutDetails.tsx";
 import RequireAuth from "./authentication/RequireAuth.tsx";
 import ProtectedLayout from "./components/ProtectedLayout.tsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import TrainingPlanDetails from "./pages/TrainingPlanDetails.tsx";
 import './App.css';
+import Calendar from "./pages/Calendar.tsx";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
       <Route element={<RequireAuth><ProtectedLayout /></RequireAuth>}>
         <Route path="/overview" element={<TrainingPlanOverview />} />
         <Route path="/training-plan/:id" element={<TrainingPlanDetails />} />
+        <Route path="/exercises/:id" element={<WorkoutDetails />} />
+        <Route path="/calendar" element={<Calendar />} />
       </Route>
     </Routes>
   );

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Run } from "../types/Run";
 import { Workout } from "../types/Workout";
 import { AddRunForm } from "../components/AddRunForm";
 import { AddWorkoutForm } from "../components/AddWorkoutForm";
+import { dayNames } from "../utils/DayNames";
+import FormatPace from "../utils/FormatPace";
+import FormatDuration from "../utils/FormatDuration";
 
 interface DayItem {
     type: "run" | "workout";
@@ -16,8 +19,6 @@ type WeekSchedule = {
     };
 };
 
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
 export default function TrainingPlanDetails() {
     const { id } = useParams<{ id: string }>();
     const [schedule, setSchedule] = useState<WeekSchedule>({});
@@ -28,8 +29,6 @@ export default function TrainingPlanDetails() {
     const [planDuration, setPlanDuration] = useState<number | null>(null);
     const [editRun, setEditRun] = useState<Run | null>(null);
     const [editWorkout, setEditWorkout] = useState<Workout | null>(null);
-
-
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
@@ -333,16 +332,20 @@ export default function TrainingPlanDetails() {
                                                                                 <p className="mb-1"><strong>Run Type:</strong> {(item.data as Run).type ?? "N/A"}</p>
                                                                                 <p className="mb-1"><strong>Time:</strong> {(item.data as Run).timeOfDay ?? "N/A"}</p>
                                                                                 <p className="mb-1"><strong>Distance:</strong> {(item.data as Run).distance ?? "N/A"} km</p>
-                                                                                <p className="mb-1"><strong>Pace:</strong> {(item.data as Run).pace ?? "N/A"} min/km</p>
-                                                                                <p className="mb-1"><strong>Duration:</strong> {((item.data as Run)?.duration ?? 0) > 0 ? ((item.data as Run).duration! / 60).toFixed(1) + " min" : "N/A"}</p>
+                                                                                <p className="mb-1"><strong>Pace:</strong> {typeof (item.data as Run).pace === "number" ? FormatPace((item.data as Run).pace!) : "N/A"}</p>
+                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Run).duration === "number" ? FormatDuration((item.data as Run).duration!) : "N/A"} min</p>
                                                                                 <p className="mb-1"><strong>Notes:</strong> {(item.data as Run).notes ?? "N/A"}</p>
                                                                             </>
                                                                         ) : (
                                                                             <>
                                                                                 <p className="mb-1"><strong>Workout Type:</strong> {(item.data as Workout).type ?? "N/A"}</p>
                                                                                 <p className="mb-1"><strong>Time:</strong> {(item.data as Workout).timeOfDay ?? "N/A"}</p>
-                                                                                <p className="mb-1"><strong>Duration:</strong> {((item.data as Workout)?.duration ?? 0) > 0 ? ((item.data as Workout).duration! / 60).toFixed(1) + " min" : "N/A"}</p>
+                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Workout).duration === "number" ? FormatDuration((item.data as Workout).duration!) : "N/A"} min</p>
                                                                                 <p className="mb-1"><strong>Notes:</strong> {(item.data as Workout).notes ?? "N/A"}</p>
+
+                                                                                <Link to={`/exercises/${(item.data as Workout).workoutID}`}>
+                                                                                    <button className="btn btn-sm btn-outline-light mt-2">View Exercises</button>
+                                                                                </Link>
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -359,7 +362,12 @@ export default function TrainingPlanDetails() {
                                                                             <i className="fas fa-pen text-light"></i>
                                                                         </button>
                                                                         <button
-                                                                            onClick={() => handleDelete(item.data, item.type)}
+                                                                            onClick={() => {
+                                                                                const confirmed = window.confirm("Are you sure you want to delete this workout/run?");
+                                                                                if (confirmed) {
+                                                                                    handleDelete(item.data, item.type);
+                                                                                }
+                                                                            }}
                                                                             className="btn btn-link p-0 m-0 text-secondary mt-2"
                                                                             title="Delete"
                                                                         >

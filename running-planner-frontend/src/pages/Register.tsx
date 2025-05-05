@@ -13,7 +13,7 @@ export default function Register() {
 
     const onSubmit = async (data: RegisterFormData) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/user/register`, {
+            const response = await fetch(`${API_BASE_URL}/user/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Workout } from "../types/Workout";
+import { dayNames } from "../utils/DayNames";
 
 interface AddWorkoutFormProps {
     trainingPlanId: number;
@@ -9,7 +10,6 @@ interface AddWorkoutFormProps {
     initialData?: Workout;
 }
 
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const workoutTypes = ["Strength", "Cardio", "Flexibility", "Endurance"];
 
 export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, initialData }: AddWorkoutFormProps) => {
@@ -82,6 +82,12 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
     };
 
     const parseTimeToSeconds = (input: string): number => {
+        if (!input) return 0;
+
+        if (!input.includes(":")) {
+            return Number(input) * 60;
+        }
+
         const [minutes, seconds] = input.split(":").map(Number);
         if (isNaN(minutes) || isNaN(seconds)) return 0;
         return minutes * 60 + seconds;
@@ -94,32 +100,47 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
     };
 
     return (
-        <div className="modal-content bg-dark text-white p-4">
-            <h5>{initialData ? "Edit Workout" : "Add Workout"}</h5>
+        <div className="modal-content bg-dark text-white p-4 rounded-3 shadow-lg">
+            <div className="modal-header border-bottom-0">
+                <h5>{initialData ? "Edit Workout" : "Add Workout"}</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
+            </div>
 
             {error && <div className="alert alert-danger">{error}</div>}
 
-            <div className="form-group">
+            <div className="form-group mb-3">
                 <label>Week Number</label>
-                <select value={weekNumber} onChange={(e) => setWeekNumber(Number(e.target.value))} className="form-control">
+                <select
+                    value={weekNumber}
+                    onChange={(e) => setWeekNumber(Number(e.target.value))}
+                    className="form-control bg-secondary text-white border-0 rounded-2"
+                >
                     {Array.from({ length: maxDuration }, (_, i) => (
                         <option key={i + 1} value={i + 1}>Week {i + 1}</option>
                     ))}
                 </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group mb-3">
                 <label>Day of Week</label>
-                <select value={dayOfWeek} onChange={(e) => setDayOfWeek(Number(e.target.value))} className="form-control">
+                <select
+                    value={dayOfWeek}
+                    onChange={(e) => setDayOfWeek(Number(e.target.value))}
+                    className="form-control bg-secondary text-white border-0 rounded-2"
+                >
                     {dayNames.map((name, index) => (
                         <option key={index} value={index}>{name}</option>
                     ))}
                 </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group mb-3">
                 <label>Workout Type</label>
-                <select value={type} onChange={(e) => setType(e.target.value)} className="form-control">
+                <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="form-control bg-secondary text-white border-0 rounded-2l"
+                >
                     <option value="">Select Workout Type</option>
                     {workoutTypes.map((workoutType, index) => (
                         <option key={index} value={workoutType}>{workoutType}</option>
@@ -127,17 +148,17 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
                 </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group mb-3">
                 <label>Time of Day</label>
                 <input
                     type="time"
                     value={timeOfDay}
                     onChange={(e) => setTimeOfDay(e.target.value)}
-                    className="form-control"
+                    className="form-control bg-secondary text-white border-0 rounded-2"
                 />
             </div>
 
-            <div className="form-group">
+            <div className="form-group mb-3">
                 <label>Duration (mm:ss)</label>
                 <input
                     type="text"
@@ -148,17 +169,24 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
                         setDurationInput(value);
                         setDuration(parseTimeToSeconds(value));
                     }}
-                    className="form-control"
+                    className="form-control white-placeholder bg-secondary text-white border-0 rounded-2"
                 />
             </div>
 
-            <div className="form-group">
+            <div className="form-group mb-3">
                 <label>Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="form-control" />
+                <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="form-control bg-secondary text-white border-0 rounded-2"
+                />
             </div>
-
-            <button onClick={handleSubmit} className="btn btn-primary">{initialData ? "Save Changes" : "Add Workout"}</button>
-            <button onClick={onClose} className="btn btn-secondary ml-2">Close</button>
+            <div className="d-flex justify-content-between">
+                <button onClick={handleSubmit} className="btn btn-primary">
+                    {initialData ? "Save Changes" : "Add Workout"}
+                </button>
+            </div>
         </div>
+
     );
 };
