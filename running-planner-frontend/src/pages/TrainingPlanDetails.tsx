@@ -415,27 +415,17 @@ export default function TrainingPlanDetails() {
                                                                             title="Delete"
                                                                         >
                                                                             <i className="fas fa-trash text-light"></i>
-                                                                        </button>                                                                   
+                                                                        </button>
                                                                         <div
                                                                             className={`custom-checkbox mt-2 ${item.data.completed ? "checked" : ""}`}
                                                                             onClick={() => {
                                                                                 const newStatus = !item.data.completed;
                                                                                 handleComplete(item.data, item.type, newStatus);
                                                                             }}
-                                                                            style={{
-                                                                                width: "20px",
-                                                                                height: "20px",
-                                                                                border: "2px solid #ccc",
-                                                                                borderRadius: "2px",
-                                                                                cursor: "pointer",
-                                                                                display: "flex",
-                                                                                alignItems: "center",
-                                                                                justifyContent: "center",
-                                                                                backgroundColor: item.data.completed ? "green" : "transparent"
-                                                                            }}
                                                                         >
-                                                                            {item.data.completed && <span style={{ color: "white" }}>✅</span>}
+                                                                            {item.data.completed && <span>✅</span>}
                                                                         </div>
+
                                                                     </div>
                                                                 </div>
                                                             </div>

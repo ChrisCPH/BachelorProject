@@ -265,19 +265,8 @@ export default function Calendar() {
                                                     const newStatus = !run.completed;
                                                     handleComplete(run, "run", newStatus);
                                                 }}
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                    border: "2px solid #ccc",
-                                                    borderRadius: "2px",
-                                                    cursor: "pointer",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    backgroundColor: run.completed ? "green" : "transparent"
-                                                }}
                                             >
-                                                {run.completed && <span style={{ color: "white" }}>✅</span>}
+                                                {run.completed && <span>✅</span>}
                                             </div>
                                             {typeof run.timeOfDay === "string" && <div>{run.timeOfDay}</div>}
                                             {run.type && <div>Type: {run.type}</div>}
@@ -304,19 +293,8 @@ export default function Calendar() {
                                                     const newStatus = !workout.completed;
                                                     handleComplete(workout, "workout", newStatus);
                                                 }}
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                    border: "2px solid #ccc",
-                                                    borderRadius: "2px",
-                                                    cursor: "pointer",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    backgroundColor: workout.completed ? "green" : "transparent"
-                                                }}
                                             >
-                                                {workout.completed && <span style={{ color: "white" }}>✅</span>}
+                                                {workout.completed && <span>✅</span>}
                                             </div>
                                             {typeof workout.timeOfDay === "string" && <div>{workout.timeOfDay}</div>}
                                             {workout.type && <div>Type: {workout.type}</div>}
