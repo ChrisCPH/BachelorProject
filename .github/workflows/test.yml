@@ -14,10 +14,18 @@ jobs:
 
     services:
       mongodb:
-        image: "mongo:latest"
+        image: mongo:4.4.6
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
+          MONGO_INITDB_DATABASE: APP-DATABASE
         ports:
-          - 41105:27017
-        options: "--health-cmd='mongod --eval db.runCommand({ connectionStatus: 1 })'"
+          - 27017:27017
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
