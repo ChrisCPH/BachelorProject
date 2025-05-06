@@ -12,25 +12,27 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      mongodb:
+        image: "mongo:latest"
+        ports:
+          - 41105:27017
+        options: "--health-cmd='mongod --eval db.runCommand({ connectionStatus: 1 })'"
+
     steps:
-      # Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up .NET environment
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0'
 
-      # Restore dependencies
       - name: Restore dependencies
         run: dotnet restore
 
-      # Build the project
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      # Run tests
       - name: Run Tests
-        run: dotnet test --no-build --configuration Release
+        run: dotnet test --no-build --configuration Release --verbosity detailed
