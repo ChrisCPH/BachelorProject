@@ -18,6 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
+        [CommentPermissionAuthorize("commenter", "editor", "owner")]
         public async Task<IActionResult> CreateComment([FromBody] Comment comment)
         {
             if (comment == null)
@@ -30,6 +31,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("{id}")]
+        [CommentPermissionAuthorize("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetCommentById(int id)
         {
             var comment = await _commentService.GetCommentByIdAsync(id);
@@ -40,11 +42,11 @@ namespace RunningPlanner.Controllers
             return Ok(comment);
         }
 
-        [HttpGet("run/{runId}")]
-
-        public async Task<IActionResult> GetAllCommentsByRun(int runId)
+        [HttpGet("run/{id}")]
+        [RunPermissionAuthorize("viewer", "commenter", "editor", "owner")]
+        public async Task<IActionResult> GetAllCommentsByRun(int id)
         {
-            var commentList = await _commentService.GetAllCommentsByRunAsync(runId);
+            var commentList = await _commentService.GetAllCommentsByRunAsync(id);
             if (commentList == null || !commentList.Any())
             {
                 return NotFound("No comments found for the specified run.");
@@ -52,10 +54,11 @@ namespace RunningPlanner.Controllers
             return Ok(commentList);
         }
 
-        [HttpGet("workout/{workoutId}")]
-        public async Task<IActionResult> GetAllCommentsByWorkout(int workoutId)
+        [HttpGet("workout/{id}")]
+        [WorkoutPermissionAuthorize("viewer", "commenter", "editor", "owner")]
+        public async Task<IActionResult> GetAllCommentsByWorkout(int id)
         {
-            var commentList = await _commentService.GetAllCommentsByWorkoutAsync(workoutId);
+            var commentList = await _commentService.GetAllCommentsByWorkoutAsync(id);
             if (commentList == null || !commentList.Any())
             {
                 return NotFound("No comments found for the specified workout.");
@@ -64,6 +67,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPut("update")]
+        [CommentPermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> UpdateComment([FromBody] Comment comment)
         {
             if (comment == null)
@@ -80,6 +84,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [CommentPermissionAuthorize("owner")]
         public async Task<IActionResult> DeleteComment(int id)
         {
             var result = await _commentService.DeleteCommentAsync(id);

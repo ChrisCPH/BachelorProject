@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Workout } from "../types/Workout";
 import { Exercise } from "../types/Exercise";
 import { dayNames } from "../utils/DayNames";
+import { handleAuthError } from "../utils/AuthError";
 
 export default function WorkoutDetails() {
     const { id } = useParams<{ id: string }>();
@@ -13,6 +14,7 @@ export default function WorkoutDetails() {
     const [showAddExercise, setShowAddExercise] = useState(false);
     const [newExercise, setNewExercise] = useState<Partial<Exercise>>({});
     const [editExercise, setEditExercise] = useState<Exercise | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     const token = localStorage.getItem("token");
@@ -64,8 +66,8 @@ export default function WorkoutDetails() {
 
     const handleAddExercise = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newExercise.name || !newExercise.sets || !newExercise.reps || newExercise.weight === undefined) {
-            setError("Please provide all the fields.");
+        if (!newExercise.name) {
+            setError("Please enter a name all the fields.");
             return;
         }
 
@@ -87,6 +89,7 @@ export default function WorkoutDetails() {
                 }),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `adding exercise`)) return;
             if (!response.ok) {
                 throw new Error("Failed to add exercise");
             }
@@ -128,6 +131,7 @@ export default function WorkoutDetails() {
                 body: JSON.stringify(editExercise),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `updating exercise`)) return;
             if (!response.ok) {
                 throw new Error("Failed to update the exercise.");
             }
@@ -160,6 +164,7 @@ export default function WorkoutDetails() {
                 },
             });
 
+            if (await handleAuthError(response, setErrorMessage, `deleting exercise`)) return;
             if (!response.ok) {
                 throw new Error("Failed to delete the exercise.");
             }
@@ -178,6 +183,9 @@ export default function WorkoutDetails() {
 
     return (
         <div className="container mt-4 text-light">
+            <div>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+            </div>
             <h2 className="text-center mb-4">Workout Details</h2>
             <div className="row justify-content-center">
                 <div className="col-md-8">

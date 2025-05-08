@@ -13,8 +13,9 @@ namespace RunningPlanner.Services
     {
         Task<User> CreateUserAsync(User user);
         Task<User?> GetUserByIdAsync(int userId);
+        Task<UserAdd?> GetUserIdByNameAsync(string username);
         Task<string> LoginAsync(string email, string password);
-        Task<bool> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission);
+        Task<(bool Success, string Message)> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission);
     }
 
     public class UserService : IUserService
@@ -115,9 +116,27 @@ namespace RunningPlanner.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<bool> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission)
+        public async Task<(bool Success, string Message)> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission)
         {
-            return await _userRepository.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission);
+            var validPermissions = new[] { "editor", "commenter", "viewer" };
+            if (!validPermissions.Contains(permission.ToLower()))
+            {
+                return (false, "Invalid permission. Must be one of: editor, commenter, viewer.");
+            }
+
+            var existingUserTrainingPlan = await _userRepository.GetUserPermission(userId, trainingPlanId);
+            if (existingUserTrainingPlan != null && existingUserTrainingPlan == "owner")
+            {
+                return (false, "User already has 'Owner' permission for this training plan.");
+            }
+
+            return await _userRepository.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission.ToLower());
+        }
+
+
+        public async Task<UserAdd?> GetUserIdByNameAsync(string username)
+        {
+            return await _userRepository.GetUserIdByUsernameAsync(username);
         }
     }
 

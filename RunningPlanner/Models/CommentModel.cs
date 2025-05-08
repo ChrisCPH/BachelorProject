@@ -19,7 +19,7 @@ namespace RunningPlanner.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User User { get; set; } = new User();
+        public User? User { get; set; }
 
         [JsonIgnore]
         public Run? Run { get; set; }

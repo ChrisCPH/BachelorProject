@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Run } from "../types/Run";
 import { dayNames } from "../utils/DayNames";
+import { handleAuthError } from "../utils/AuthError";
 
 interface AddRunFormProps {
     trainingPlanId: number;
@@ -24,6 +25,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
     const [pace, setPace] = useState(0); // actual seconds
     const [durationInput, setDurationInput] = useState(""); // string like "30:00"
     const [duration, setDuration] = useState(0); // actual seconds
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
@@ -78,6 +80,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
                 body: JSON.stringify(newRun),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `adding/updating run`)) return;
             if (!response.ok) {
                 throw new Error("Failed to save run");
             }
@@ -115,6 +118,9 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
 
     return (
         <div className="modal-content bg-dark text-white p-4 rounded-3 shadow-lg">
+            <div>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+            </div>
             <div className="modal-header border-bottom-0">
                 <h5>{initialData ? "Edit Run" : "Add Run"}</h5>
                 <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>

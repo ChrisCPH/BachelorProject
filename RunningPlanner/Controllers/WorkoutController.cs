@@ -18,6 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
+        [TrainingPlanPermissionAuthorize ("editor", "owner")]
         public async Task<IActionResult> CreateWorkout([FromBody] Workout workout)
         {
             if (workout == null)
@@ -30,6 +31,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("{id}")]
+        [WorkoutPermissionAuthorize("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetWorkoutById(int id)
         {
             var workout = await _workoutService.GetWorkoutByIdAsync(id);
@@ -40,10 +42,11 @@ namespace RunningPlanner.Controllers
             return Ok(workout);
         }
 
-        [HttpGet("trainingPlan/{trainingPlanId}")]
-        public async Task<IActionResult> GetAllWorkoutsByTrainingPlan(int trainingPlanId)
+        [HttpGet("trainingPlan/{id}")]
+        [TrainingPlanPermissionAuthorize("viewer", "commenter", "editor", "owner")]
+        public async Task<IActionResult> GetAllWorkoutsByTrainingPlan(int id)
         {
-            var workouts = await _workoutService.GetAllWorkoutsByTrainingPlanAsync(trainingPlanId);
+            var workouts = await _workoutService.GetAllWorkoutsByTrainingPlanAsync(id);
             if (workouts == null || !workouts.Any())
             {
                 return NotFound("No workouts found for the specified workout.");
@@ -52,6 +55,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPut("update")]
+        [WorkoutPermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> UpdateWorkout([FromBody] Workout workout)
         {
             if (workout == null)
@@ -68,6 +72,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [WorkoutPermissionAuthorize("owner")]
         public async Task<IActionResult> DeleteWorkout(int id)
         {
             var result = await _workoutService.DeleteWorkoutAsync(id);
@@ -79,6 +84,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPatch("complete/{id}")]
+        [WorkoutPermissionAuthorize("owner")]
         public async Task<IActionResult> UpdateWorkoutCompletedStatus(int id, [FromBody] bool completed)
         {
             var workout = await _workoutService.GetWorkoutByIdAsync(id);

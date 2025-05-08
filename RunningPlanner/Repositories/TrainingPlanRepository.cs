@@ -9,6 +9,8 @@ namespace RunningPlanner.Repositories
         Task<TrainingPlan> AddTrainingPlanAsync(TrainingPlan trainingPlan, int userId);
         Task<TrainingPlan?> GetTrainingPlanByIdAsync(int trainingPlanId);
         Task<List<TrainingPlan>?> GetAllTrainingPlansByUserAsync(int userId);
+        Task<List<TrainingPlanWithPermission>?> GetAllTrainingPlansWithPermissionsByUserAsync(int userId);
+
         Task<TrainingPlan> UpdateTrainingPlanAsync(TrainingPlan trainingPlan);
         Task<bool> DeleteTrainingPlanAsync(int trainingPlanId);
     }
@@ -31,7 +33,7 @@ namespace RunningPlanner.Repositories
             {
                 UserID = userId,
                 TrainingPlanID = trainingPlan.TrainingPlanID,
-                Permission = "Owner"
+                Permission = "owner"
             };
 
             await _context.UserTrainingPlan.AddAsync(userTrainingPlan);
@@ -80,5 +82,23 @@ namespace RunningPlanner.Repositories
             return true;
         }
 
+        public async Task<List<TrainingPlanWithPermission>?> GetAllTrainingPlansWithPermissionsByUserAsync(int userId)
+        {
+            return await _context.UserTrainingPlan
+                .Where(utp => utp.UserID == userId)
+                .Include(utp => utp.TrainingPlan)
+                .Select(utp => new TrainingPlanWithPermission
+                {
+                    TrainingPlanID = utp.TrainingPlan.TrainingPlanID,
+                    Name = utp.TrainingPlan.Name,
+                    StartDate = utp.TrainingPlan.StartDate,
+                    Duration = utp.TrainingPlan.Duration,
+                    Event = utp.TrainingPlan.Event,
+                    GoalTime = utp.TrainingPlan.GoalTime,
+                    CreatedAt = utp.TrainingPlan.CreatedAt,
+                    Permission = utp.Permission
+                })
+                .ToListAsync();
+        }
     }
 }

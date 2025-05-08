@@ -172,5 +172,71 @@ namespace RunningPlanner.Tests.Controllers
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Training plan not found.", notFoundResult.Value);
         }
+
+        [Fact]
+        public async Task GetAllTrainingPlansByUserWithPermissions_ShouldReturnOk_WhenTrainingPlansExist()
+        {
+            var userId = 1;
+            var trainingPlans = new List<TrainingPlanWithPermission>
+            {
+                new TrainingPlanWithPermission { TrainingPlanID = 1, Permission = "Owner" }
+            };
+
+            _trainingPlanServiceMock
+                .Setup(s => s.GetAllTrainingPlansWithPermissionsByUserAsync(userId))
+                .ReturnsAsync(trainingPlans);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("UserID", userId.ToString())], "mock"));
+
+            _trainingPlanController.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _trainingPlanController.GetAllTrainingPlansByUserWithPermissions();
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(trainingPlans, okResult.Value);
+        }
+
+
+        [Fact]
+        public async Task GetAllTrainingPlansByUserWithPermissions_ShouldReturnNotFound_WhenNoTrainingPlansFound()
+        {
+            var userId = 1;
+            var emptyPlans = new List<TrainingPlanWithPermission>();
+
+            _trainingPlanServiceMock
+                .Setup(s => s.GetAllTrainingPlansWithPermissionsByUserAsync(userId))
+                .ReturnsAsync(emptyPlans);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("UserID", userId.ToString())], "mock"));
+
+            _trainingPlanController.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _trainingPlanController.GetAllTrainingPlansByUserWithPermissions();
+
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("No training plans found for the user.", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansByUserWithPermissions_ShouldReturnUnauthorized_WhenUserIdClaimMissing()
+        {
+            var user = new ClaimsPrincipal(new ClaimsIdentity());
+
+            _trainingPlanController.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _trainingPlanController.GetAllTrainingPlansByUserWithPermissions();
+
+            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
+            Assert.Equal("User ID not found in token.", unauthorizedResult.Value);
+        }
     }
 }

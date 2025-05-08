@@ -38,6 +38,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("{id}")]
+        [TrainingPlanPermissionAuthorize ("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetTrainingPlanById(int id)
         {
             var trainingPlan = await _trainingPlanService.GetTrainingPlanByIdAsync(id);
@@ -67,8 +68,27 @@ namespace RunningPlanner.Controllers
             return Ok(trainingPlans);
         }
 
+        [HttpGet("planswithpermission")]
+        public async Task<IActionResult> GetAllTrainingPlansByUserWithPermissions()
+        {
+            var userIdClaim = User.FindFirst("UserID");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var trainingPlans = await _trainingPlanService.GetAllTrainingPlansWithPermissionsByUserAsync(userId);
+            if (trainingPlans == null || !trainingPlans.Any())
+            {
+                return NotFound("No training plans found for the user.");
+            }
+            return Ok(trainingPlans);
+        }
 
         [HttpPut("update")]
+        [TrainingPlanPermissionAuthorize ("owner", "editor")]
         public async Task<IActionResult> UpdateTrainingPlan([FromBody] TrainingPlan trainingPlan)
         {
             if (trainingPlan == null)
@@ -85,6 +105,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [TrainingPlanPermissionAuthorize ("owner")]
         public async Task<IActionResult> DeleteTrainingPlan(int id)
         {
             var result = await _trainingPlanService.DeleteTrainingPlanAsync(id);

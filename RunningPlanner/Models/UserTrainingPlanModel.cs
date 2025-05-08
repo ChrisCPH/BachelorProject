@@ -13,7 +13,7 @@ namespace RunningPlanner.Models
         public int TrainingPlanID { get; set; } // Foreign key to TrainingPlansModel
 
         [MaxLength(20)]
-        public string Permission { get; set; } = "Viewer"; // Owner, Editor, Commenter, Viewer
+        public string Permission { get; set; } = "viewer"; // Owner, Editor, Commenter, Viewer
 
         [JsonIgnore]
         public TrainingPlan TrainingPlan { get; set; } = null!;

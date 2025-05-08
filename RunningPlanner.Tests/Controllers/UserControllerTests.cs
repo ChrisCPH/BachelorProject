@@ -3,8 +3,6 @@ using Moq;
 using RunningPlanner.Controllers;
 using RunningPlanner.Models;
 using RunningPlanner.Services;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace RunningPlanner.Tests.Controllers
 {
@@ -105,31 +103,65 @@ namespace RunningPlanner.Tests.Controllers
             Assert.Contains("Invalid email or password.", value);
         }
 
-
         [Fact]
         public async Task AddUserToTrainingPlan_ShouldReturnOk_WhenSuccessful()
         {
             int userId = 1, trainingPlanId = 2;
-            string permission = "read";
-            _userServiceMock.Setup(s => s.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission)).ReturnsAsync(true);
+            string permission = "viewer";
+            string successMessage = "User is now following the training plan";
+
+            _userServiceMock
+                .Setup(s => s.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission))
+                .ReturnsAsync((true, successMessage));
 
             var result = await _userController.AddUserToTrainingPlan(userId, trainingPlanId, permission);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("User is now following the training plan", okResult.Value);
+            Assert.Equal(successMessage, okResult.Value);
         }
 
         [Fact]
         public async Task AddUserToTrainingPlan_ShouldReturnBadRequest_WhenFailed()
         {
             int userId = 1, trainingPlanId = 2;
-            string permission = "read";
-            _userServiceMock.Setup(s => s.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission)).ReturnsAsync(false);
+            string permission = "viewer";
+            string failureMessage = "Failed to follow training plan.";
+
+            _userServiceMock
+                .Setup(s => s.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission))
+                .ReturnsAsync((false, failureMessage));
 
             var result = await _userController.AddUserToTrainingPlan(userId, trainingPlanId, permission);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(failureMessage, badRequest.Value);
+        }
 
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Failed to follow training plan.", badRequestResult.Value);
+        [Fact]
+        public async Task GetUserIdByName_ShouldReturnOk_WithUser()
+        {
+            var user = new UserAdd { UserID = 1, UserName = "john" };
+            _userServiceMock
+                .Setup(s => s.GetUserIdByNameAsync("john"))
+                .ReturnsAsync(user);
+
+            var result = await _userController.GetUserIdByName("john");
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnValue = Assert.IsType<UserAdd>(okResult.Value);
+            Assert.Equal("john", returnValue.UserName);
+            Assert.Equal(1, returnValue.UserID);
+        }
+
+        [Fact]
+        public async Task GetUserIdByName_ShouldReturnNotFound_WhenUserIsNull()
+        {
+            _userServiceMock
+                .Setup(s => s.GetUserIdByNameAsync("ghost"))
+                .ReturnsAsync((UserAdd?)null);
+
+            var result = await _userController.GetUserIdByName("ghost");
+
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }

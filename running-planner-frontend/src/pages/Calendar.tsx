@@ -7,6 +7,8 @@ import FormatDuration from "../utils/FormatDuration";
 import DatePicker from "react-datepicker";
 import { formatLocalDate, isSunday } from "../utils/FormatLocalDate";
 import { Link } from "react-router-dom";
+import { TrainingPlanWithPermission } from "../types/TrainingPlanWithPermission";
+import { handleAuthError } from "../utils/AuthError";
 
 export default function Calendar() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -19,6 +21,9 @@ export default function Calendar() {
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
     const [showStartDateModal, setShowStartDateModal] = useState(false);
     const [newStartDate, setNewStartDate] = useState<string>("");
+    const [editAccess, setEditAccessPlans] = useState<TrainingPlanWithPermission[]>([]);
+    const [noEditAccess, setNoEditAccessPlans] = useState<TrainingPlanWithPermission[]>([]);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         fetchPlans();
@@ -26,15 +31,36 @@ export default function Calendar() {
 
     useEffect(() => {
         if (selectedPlanId) {
-            const plan = plans.find((p) => p.trainingPlanID === selectedPlanId) || null;
+            const allPlans = [...editAccess, ...noEditAccess];
+            const plan = allPlans.find((p) => p.trainingPlanID === selectedPlanId) || null;
             setSelectedPlan(plan);
-            if (plan?.startDate) {
-                fetchPlanData(plan.trainingPlanID);
-            } else if (plan) {
-                setShowStartDateModal(true);
+
+            if (plan) {
+                if (plan.startDate) {
+                    fetchPlanData(plan.trainingPlanID);
+                } else {
+                    const hasEditAccess = editAccess.some(p => p.trainingPlanID === plan.trainingPlanID);
+                    if (hasEditAccess) {
+                        setShowStartDateModal(true);
+                    } else {
+                        const nearestSunday = getNearestSunday(new Date());
+                        const planWithStartDate = {
+                            ...plan,
+                            startDate: formatLocalDate(nearestSunday.toISOString())
+                        };
+                        setSelectedPlan(planWithStartDate);
+                        fetchPlanData(plan.trainingPlanID);
+                    }
+                }
             }
         }
-    }, [selectedPlanId]);
+    }, [selectedPlanId, editAccess, noEditAccess]);
+
+    const getNearestSunday = (date: Date): Date => {
+        const day = date.getDay();
+        const diff = date.getDate() - day + (day === 0 ? 0 : 7);
+        return new Date(date.setDate(diff));
+    };
 
     useEffect(() => {
         if (selectedPlan?.startDate) {
@@ -44,11 +70,19 @@ export default function Calendar() {
 
     const fetchPlans = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/trainingplan/user`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            const response = await fetch(`${API_BASE_URL}/trainingplan/planswithpermission`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
             });
-            const data = await res.json();
-            setPlans(data);
+            if (!response.ok) throw new Error("Failed to fetch training plans");
+
+            const data: TrainingPlanWithPermission[] = await response.json();
+            setEditAccessPlans(data.filter(plan => plan.permission === "owner" || plan.permission === "editor"));
+            setNoEditAccessPlans(data.filter(plan => plan.permission === "viewer" || plan.permission === "commenter"));
+            setPlans([...data]);
         } catch (error) {
             console.error("Error fetching plans:", error);
         }
@@ -164,6 +198,7 @@ export default function Calendar() {
                 body: JSON.stringify(completed),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `completing ${type}`)) return;
             if (!response.ok) {
                 throw new Error(`Failed to update ${type} completion status. Status: ${response.status}`);
             }
@@ -184,6 +219,12 @@ export default function Calendar() {
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const getWeekNumber = (date: Date): number => {
+        if (!selectedPlan?.startDate) return 0;
+        const diff = date.getTime() - new Date(selectedPlan.startDate).getTime();
+        return Math.floor(diff / (1000 * 3600 * 24 * 7)) + 1;
     };
 
     const renderCell = (date: Date) => {
@@ -313,14 +354,11 @@ export default function Calendar() {
         );
     };
 
-    const getWeekNumber = (date: Date): number => {
-        if (!selectedPlan?.startDate) return 0;
-        const diff = date.getTime() - new Date(selectedPlan.startDate).getTime();
-        return Math.floor(diff / (1000 * 3600 * 24 * 7)) + 1;
-    };
-
     return (
         <div className="container text-white mt-5 p-4 rounded">
+            <div>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+            </div>
             <h2 className="text-center mb-4">Training Calendar</h2>
 
             <div className="mb-4">
@@ -331,9 +369,14 @@ export default function Calendar() {
                     onChange={(e) => setSelectedPlanId(Number(e.target.value))}
                 >
                     <option value="">-- Select a Plan --</option>
-                    {plans.map((plan) => (
+                    {editAccess.map((plan) => (
                         <option key={plan.trainingPlanID} value={plan.trainingPlanID}>
                             {plan.name}
+                        </option>
+                    ))}
+                    {noEditAccess.map((plan) => (
+                        <option key={plan.trainingPlanID} value={plan.trainingPlanID}>
+                            {plan.name} (View only)
                         </option>
                     ))}
                 </select>

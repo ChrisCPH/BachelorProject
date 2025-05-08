@@ -18,6 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
+        [TrainingPlanPermissionAuthorize ("editor", "owner")]
         public async Task<IActionResult> CreateRun([FromBody] Run run)
         {
             if (run == null)
@@ -30,6 +31,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("{id}")]
+        [RunPermissionAuthorize("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetRunById(int id)
         {
             var run = await _runService.GetRunByIdAsync(id);
@@ -40,10 +42,11 @@ namespace RunningPlanner.Controllers
             return Ok(run);
         }
 
-        [HttpGet("trainingplan/{trainingPlanId}")]
-        public async Task<IActionResult> GetAllRunsByTrainingPlan(int trainingPlanId)
+        [HttpGet("trainingplan/{id}")]
+        [TrainingPlanPermissionAuthorize ("viewer", "commenter", "editor", "owner")]
+        public async Task<IActionResult> GetAllRunsByTrainingPlan(int id)
         {
-            var runs = await _runService.GetAllRunsByTrainingPlanAsync(trainingPlanId);
+            var runs = await _runService.GetAllRunsByTrainingPlanAsync(id);
             if (runs == null || !runs.Any())
             {
                 return NotFound("No runs found for the specified training plan.");
@@ -52,6 +55,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPut("update")]
+        [RunPermissionAuthorize("owner", "editor")]
         public async Task<IActionResult> UpdateRun([FromBody] Run run)
         {
             if (run == null)
@@ -64,6 +68,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [RunPermissionAuthorize("owner")]
         public async Task<IActionResult> DeleteRun(int id)
         {
             var result = await _runService.DeleteRunAsync(id);
@@ -75,6 +80,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPatch("complete/{id}")]
+        [RunPermissionAuthorize("owner")]
         public async Task<IActionResult> UpdateRunCompletedStatus(int id, [FromBody] bool completed)
         {
             var run = await _runService.GetRunByIdAsync(id);

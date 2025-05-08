@@ -18,6 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
+        [WorkoutPermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> CreateExercise([FromBody] Exercise exercise)
         {
             if (exercise == null)
@@ -30,6 +31,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("{id}")]
+        [ExercisePermissionAuthorize("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetExerciseById(int id)
         {
             var exercise = await _exerciseService.GetExerciseByIdAsync(id);
@@ -40,10 +42,11 @@ namespace RunningPlanner.Controllers
             return Ok(exercise);
         }
 
-        [HttpGet("workout/{workoutId}")]
-        public async Task<IActionResult> GetAllExercisesByWorkout(int workoutId)
+        [HttpGet("workout/{id}")]
+        [WorkoutPermissionAuthorize("viewer", "commenter", "editor", "owner")]
+        public async Task<IActionResult> GetAllExercisesByWorkout(int id)
         {
-            var exerciseList = await _exerciseService.GetAllExercisesByWorkoutAsync(workoutId);
+            var exerciseList = await _exerciseService.GetAllExercisesByWorkoutAsync(id);
             if (exerciseList == null || !exerciseList.Any())
             {
                 return NotFound("No exercises found for the specified workout.");
@@ -52,6 +55,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPut("update")]
+        [ExercisePermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> UpdateExercise([FromBody] Exercise exercise)
         {
             if (exercise == null)
@@ -64,6 +68,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [ExercisePermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> DeleteExercise(int id)
         {
             var result = await _exerciseService.DeleteExerciseAsync(id);

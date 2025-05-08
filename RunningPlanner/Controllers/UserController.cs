@@ -53,6 +53,17 @@ namespace RunningPlanner.Controllers
             return Ok(user);
         }
 
+        [HttpGet("get/{userName}")]
+        public async Task<IActionResult> GetUserIdByName(string username)
+        {
+            var user = await _userService.GetUserIdByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
@@ -85,13 +96,14 @@ namespace RunningPlanner.Controllers
         [HttpPost("addUserToTrainingPlan")]
         public async Task<IActionResult> AddUserToTrainingPlan([FromQuery] int userId, [FromQuery] int trainingPlanId, [FromQuery] string permission)
         {
-            var success = await _userService.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission);
+            var (success, message) = await _userService.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission);
+
             if (!success)
             {
-                return BadRequest("Failed to follow training plan.");
+                return BadRequest(message);
             }
 
-            return Ok("User is now following the training plan");
+            return Ok(message);
         }
     }
 }

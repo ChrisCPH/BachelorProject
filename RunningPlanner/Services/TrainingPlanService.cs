@@ -10,6 +10,7 @@ namespace RunningPlanner.Services
         Task<List<TrainingPlan>?> GetAllTrainingPlansByUserAsync(int userId);
         Task<TrainingPlan> UpdateTrainingPlanAsync(TrainingPlan trainingPlan);
         Task<bool> DeleteTrainingPlanAsync(int trainingPlanId);
+        Task<List<TrainingPlanWithPermission>?> GetAllTrainingPlansWithPermissionsByUserAsync(int userId);
     }
 
     public class TrainingPlanService : ITrainingPlanService
@@ -39,6 +40,11 @@ namespace RunningPlanner.Services
         public async Task<List<TrainingPlan>?> GetAllTrainingPlansByUserAsync(int userId)
         {
             return await _trainingPlanRepository.GetAllTrainingPlansByUserAsync(userId);
+        }
+
+        public async Task<List<TrainingPlanWithPermission>?> GetAllTrainingPlansWithPermissionsByUserAsync(int userId)
+        {
+            return await _trainingPlanRepository.GetAllTrainingPlansWithPermissionsByUserAsync(userId);
         }
 
         public async Task<TrainingPlan> UpdateTrainingPlanAsync(TrainingPlan trainingPlan)

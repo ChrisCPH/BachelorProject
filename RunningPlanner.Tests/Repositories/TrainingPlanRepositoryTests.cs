@@ -35,7 +35,7 @@ namespace RunningPlanner.Tests
             {
                 UserID = 1,
                 TrainingPlanID = 1,
-                Permission = "Owner",
+                Permission = "owner",
                 User = user
             };
 
@@ -124,6 +124,89 @@ namespace RunningPlanner.Tests
             var result = await repo.DeleteTrainingPlanAsync(999);
 
             Assert.False(result);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansWithPermissionsByUserAsync_ShouldReturnPlansWithPermissions()
+        {
+            var context = GetInMemoryDbContext();
+
+            var user = new User { UserID = 1 };
+            var plan1 = new TrainingPlan
+            {
+                TrainingPlanID = 1,
+                Name = "Base Plan",
+                Event = "Half Marathon",
+            };
+            var plan2 = new TrainingPlan
+            {
+                TrainingPlanID = 2,
+                Name = "Advanced Plan",
+                Event = "Marathon",
+            };
+
+            var link1 = new UserTrainingPlan
+            {
+                UserID = 1,
+                TrainingPlanID = 1,
+                TrainingPlan = plan1,
+                Permission = "owner"
+            };
+
+            var link2 = new UserTrainingPlan
+            {
+                UserID = 1,
+                TrainingPlanID = 2,
+                TrainingPlan = plan2,
+                Permission = "editor"
+            };
+
+            context.User.Add(user);
+            context.TrainingPlan.AddRange(plan1, plan2);
+            context.UserTrainingPlan.AddRange(link1, link2);
+            await context.SaveChangesAsync();
+
+            var repo = new TrainingPlanRepository(context);
+            var result = await repo.GetAllTrainingPlansWithPermissionsByUserAsync(1);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result!.Count);
+
+            var basePlan = result.First(p => p.TrainingPlanID == 1);
+            Assert.Equal("Base Plan", basePlan.Name);
+            Assert.Equal("owner", basePlan.Permission);
+
+            var advancedPlan = result.First(p => p.TrainingPlanID == 2);
+            Assert.Equal("Advanced Plan", advancedPlan.Name);
+            Assert.Equal("editor", advancedPlan.Permission);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansWithPermissionsByUserAsync_ShouldReturnEmptyList_IfUserHasNoPlans()
+        {
+            var context = GetInMemoryDbContext();
+
+            var user = new User { UserID = 1 };
+            context.User.Add(user);
+            await context.SaveChangesAsync();
+
+            var repo = new TrainingPlanRepository(context);
+            var result = await repo.GetAllTrainingPlansWithPermissionsByUserAsync(1);
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansWithPermissionsByUserAsync_ShouldReturnEmptyList_IfUserDoesNotExist()
+        {
+            var context = GetInMemoryDbContext();
+
+            var repo = new TrainingPlanRepository(context);
+            var result = await repo.GetAllTrainingPlansWithPermissionsByUserAsync(999);
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
         }
     }
 }

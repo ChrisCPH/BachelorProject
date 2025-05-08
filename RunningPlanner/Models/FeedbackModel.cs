@@ -17,7 +17,7 @@ namespace RunningPlanner.Models
 
         public int? Duration { get; set; } // in seconds
 
-        public int? Distance { get; set; } // in kilometers
+        public double? Distance { get; set; } // in kilometers
 
         public string? Comment { get; set; }
 

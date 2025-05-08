@@ -36,3 +36,12 @@
 .custom-checkbox span {
     color: white;
 }
+
+.error-message {
+    color: white;
+    padding: 10px;
+    background-color: rgba(255, 0, 0, 0.493);
+    border-radius: 5px;
+    margin-top: 10px;
+    font-weight: bold;
+}

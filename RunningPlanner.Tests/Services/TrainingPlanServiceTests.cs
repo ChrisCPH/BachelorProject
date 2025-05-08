@@ -90,5 +90,56 @@ namespace RunningPlanner.Tests.Services
             Assert.True(result);
             _trainingPlanRepositoryMock.Verify(repo => repo.DeleteTrainingPlanAsync(trainingPlanId), Times.Once);
         }
+
+        [Fact]
+        public async Task GetAllTrainingPlansWithPermissionsByUserAsync_ShouldReturnPlansWithPermissions_WhenTheyExist()
+        {
+            int userId = 1;
+            var plansWithPermissions = new List<TrainingPlanWithPermission>
+    {
+        new TrainingPlanWithPermission { TrainingPlanID = 1, Name = "Plan A", Permission = "owner" },
+        new TrainingPlanWithPermission { TrainingPlanID = 2, Name = "Plan B", Permission = "editor" }
+    };
+
+            _trainingPlanRepositoryMock
+                .Setup(repo => repo.GetAllTrainingPlansWithPermissionsByUserAsync(userId))
+                .ReturnsAsync(plansWithPermissions);
+
+            var result = await _trainingPlanService.GetAllTrainingPlansWithPermissionsByUserAsync(userId);
+
+            Assert.Equal(plansWithPermissions, result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.GetAllTrainingPlansWithPermissionsByUserAsync(userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansWithPermissionsByUserAsync_ShouldReturnEmptyList_WhenNoPlansExist()
+        {
+            int userId = 1;
+
+            _trainingPlanRepositoryMock
+                .Setup(repo => repo.GetAllTrainingPlansWithPermissionsByUserAsync(userId))
+                .ReturnsAsync(new List<TrainingPlanWithPermission>());
+
+            var result = await _trainingPlanService.GetAllTrainingPlansWithPermissionsByUserAsync(userId);
+
+            Assert.Empty(result!);
+            _trainingPlanRepositoryMock.Verify(repo => repo.GetAllTrainingPlansWithPermissionsByUserAsync(userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetAllTrainingPlansWithPermissionsByUserAsync_ShouldReturnNull_WhenRepositoryReturnsNull()
+        {
+            int userId = 1;
+
+            _trainingPlanRepositoryMock
+                .Setup(repo => repo.GetAllTrainingPlansWithPermissionsByUserAsync(userId))
+                .ReturnsAsync((List<TrainingPlanWithPermission>?)null);
+
+            var result = await _trainingPlanService.GetAllTrainingPlansWithPermissionsByUserAsync(userId);
+
+            Assert.Null(result);
+            _trainingPlanRepositoryMock.Verify(repo => repo.GetAllTrainingPlansWithPermissionsByUserAsync(userId), Times.Once);
+        }
+
     }
 }

@@ -7,6 +7,8 @@ import { AddWorkoutForm } from "../components/AddWorkoutForm";
 import { dayNames } from "../utils/DayNames";
 import FormatPace from "../utils/FormatPace";
 import FormatDuration from "../utils/FormatDuration";
+import { handleAuthError } from "../utils/AuthError";
+import { AddUserForm } from "../components/AddUserForm";
 
 interface DayItem {
     type: "run" | "workout";
@@ -25,10 +27,12 @@ export default function TrainingPlanDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAddRun, setShowAddRun] = useState(false);
+    const [showAddUser, setShowAddUser] = useState(false);
     const [showAddWorkout, setShowAddWorkout] = useState(false);
     const [planDuration, setPlanDuration] = useState<number | null>(null);
     const [editRun, setEditRun] = useState<Run | null>(null);
     const [editWorkout, setEditWorkout] = useState<Workout | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
@@ -101,6 +105,7 @@ export default function TrainingPlanDetails() {
                 body: JSON.stringify(updatedRun),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `editing run`)) return;
             if (!response.ok) throw new Error("Failed to update run");
 
             setSchedule(prev => {
@@ -135,6 +140,7 @@ export default function TrainingPlanDetails() {
                 body: JSON.stringify(updatedWorkout),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `editing workout`)) return;
             if (!response.ok) throw new Error("Failed to update workout");
 
             setSchedule(prev => {
@@ -169,6 +175,7 @@ export default function TrainingPlanDetails() {
                 },
             });
 
+            if (await handleAuthError(response, setErrorMessage, `deleting ${type}`)) return;
             if (!response.ok) {
                 throw new Error(`Failed to delete ${type}. Status: ${response.status}`);
             }
@@ -207,6 +214,7 @@ export default function TrainingPlanDetails() {
                 body: JSON.stringify(completed),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `completing ${type}`)) return;
             if (!response.ok) {
                 throw new Error(`Failed to update ${type} completion status. Status: ${response.status}`);
             }
@@ -235,6 +243,9 @@ export default function TrainingPlanDetails() {
 
     return (
         <div className="container mt-5 text-light">
+            <div>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+            </div>
             <h2>Training Plan Details</h2>
             {planDuration && <p><strong>Plan Duration:</strong> {planDuration} weeks</p>}
             <div className="mb-4">
@@ -246,6 +257,11 @@ export default function TrainingPlanDetails() {
                 {/* Add Workout Button */}
                 <button className="btn btn-primary" onClick={() => setShowAddWorkout(true)}>
                     Add Workout
+                </button>
+
+                {/* Add User Button */}
+                <button className="btn btn-primary" onClick={() => setShowAddUser(true)}>
+                    Add User
                 </button>
             </div>
 
@@ -302,6 +318,16 @@ export default function TrainingPlanDetails() {
                                 return updated;
                             });
                         }}
+                    />
+                </div>
+            )}
+
+            {showAddUser && (
+                <div className="modal">
+                    <AddUserForm
+                        trainingPlanId={parseInt(id!)}
+                        onSubmit={() => {}}
+                        onClose={() => setShowAddUser(false)}
                     />
                 </div>
             )}

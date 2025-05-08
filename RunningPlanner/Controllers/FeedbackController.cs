@@ -18,6 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
+        [RunPermissionAuthorize("owner")]
         public async Task<IActionResult> CreateFeedback([FromBody] Feedback feedback)
         {
             if (feedback == null)
@@ -30,6 +31,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("{id}")]
+        [FeedbackPermissionAuthorize("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetFeedbackById(int id)
         {
             var feedback = await _feedbackService.GetFeedbackByIdAsync(id);
@@ -40,10 +42,11 @@ namespace RunningPlanner.Controllers
             return Ok(feedback);
         }
 
-        [HttpGet("run/{runId}")]
-        public async Task<IActionResult> GetFeedbackByRun(int runId)
+        [HttpGet("run/{id}")]
+        [RunPermissionAuthorize("viewer", "commenter", "editor", "owner")]
+        public async Task<IActionResult> GetFeedbackByRun(int id)
         {
-            var feedback = await _feedbackService.GetFeedbackByRunAsync(runId);
+            var feedback = await _feedbackService.GetFeedbackByRunAsync(id);
             if (feedback == null)
             {
                 return NotFound("No feedback found for the specified run.");
@@ -52,6 +55,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPut("update")]
+        [FeedbackPermissionAuthorize("owner")]
         public async Task<IActionResult> UpdateFeedback([FromBody] Feedback feedback)
         {
             if (feedback == null)
@@ -68,6 +72,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [FeedbackPermissionAuthorize("owner")]
         public async Task<IActionResult> DeleteFeedback(int id)
         {
             var result = await _feedbackService.DeleteFeedbackAsync(id);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Workout } from "../types/Workout";
 import { dayNames } from "../utils/DayNames";
+import { handleAuthError } from "../utils/AuthError";
 
 interface AddWorkoutFormProps {
     trainingPlanId: number;
@@ -21,6 +22,7 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
     const [duration, setDuration] = useState(0); // actual seconds
     const [notes, setNotes] = useState("");
     const [error, setError] = useState("");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
@@ -70,6 +72,7 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
                 body: JSON.stringify(newWorkout),
             });
 
+            if (await handleAuthError(response, setErrorMessage, `adding/updating workout`)) return;
             if (!response.ok) {
                 throw new Error("Failed to save workout");
             }
@@ -101,6 +104,9 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
 
     return (
         <div className="modal-content bg-dark text-white p-4 rounded-3 shadow-lg">
+            <div>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+            </div>
             <div className="modal-header border-bottom-0">
                 <h5>{initialData ? "Edit Workout" : "Add Workout"}</h5>
                 <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
