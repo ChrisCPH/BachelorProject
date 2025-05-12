@@ -26,7 +26,24 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Comment data is required.");
             }
 
-            var createdComment = await _commentService.CreateCommentAsync(comment);
+            var userIdClaim = User.FindFirst("UserID");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var commentWithUserId = new Comment
+            {
+                UserID = userId,
+                RunID = comment.RunID,
+                WorkoutID = comment.WorkoutID,
+                Text = comment.Text,
+                CreatedAt = comment.CreatedAt
+            };
+
+            var createdComment = await _commentService.CreateCommentAsync(commentWithUserId);
             return CreatedAtAction(nameof(GetCommentById), new { id = createdComment.CommentID }, createdComment);
         }
 
@@ -75,11 +92,30 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Comment data is required.");
             }
 
-            var updatedComment = await _commentService.UpdateCommentAsync(comment);
+            var userIdClaim = User.FindFirst("UserID");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var commentWithUserId = new Comment
+            {
+                CommentID = comment.CommentID,
+                UserID = userId,
+                RunID = comment.RunID,
+                WorkoutID = comment.WorkoutID,
+                Text = comment.Text,
+                CreatedAt = comment.CreatedAt
+            };
+
+            var updatedComment = await _commentService.UpdateCommentAsync(commentWithUserId);
             if (updatedComment == null)
             {
                 return NotFound("Comment not found.");
             }
+
             return Ok(updatedComment);
         }
 

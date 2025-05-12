@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RunningPlanner.Controllers;
@@ -20,14 +22,42 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task CreateComment_ReturnsCreatedAtAction_WhenCommentIsValid()
         {
-            var comment = new Comment { CommentID = 1 };
-            _commentServiceMock.Setup(s => s.CreateCommentAsync(comment)).ReturnsAsync(comment);
+            var inputComment = new Comment
+            {
+                RunID = 10,
+                WorkoutID = 5,
+                Text = "Great run!",
+                CreatedAt = DateTime.UtcNow
+            };
 
-            var result = await _controller.CreateComment(comment);
+            var createdComment = new Comment
+            {
+                CommentID = 1,
+                UserID = 123,
+                RunID = 10,
+                WorkoutID = 5,
+                Text = "Great run!",
+                CreatedAt = inputComment.CreatedAt
+            };
+
+            _commentServiceMock.Setup(s => s.CreateCommentAsync(It.IsAny<Comment>()))
+                               .ReturnsAsync(createdComment);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new Claim("UserID", "123")
+            }, "mock"));
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _controller.CreateComment(inputComment);
 
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(nameof(CommentController.GetCommentById), createdResult.ActionName);
-            Assert.Equal(comment, createdResult.Value);
+            Assert.Equal(createdComment, createdResult.Value);
         }
 
         [Fact]
@@ -110,14 +140,44 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task UpdateComment_ReturnsOk_WhenCommentIsUpdated()
         {
-            var comment = new Comment { CommentID = 1 };
-            _commentServiceMock.Setup(s => s.UpdateCommentAsync(comment)).ReturnsAsync(comment);
+            var inputComment = new Comment
+            {
+                CommentID = 1,
+                RunID = 10,
+                WorkoutID = 5,
+                Text = "Updated text",
+                CreatedAt = DateTime.UtcNow
+            };
 
-            var result = await _controller.UpdateComment(comment);
+            var updatedComment = new Comment
+            {
+                CommentID = 1,
+                UserID = 123,
+                RunID = 10,
+                WorkoutID = 5,
+                Text = "Updated text",
+                CreatedAt = inputComment.CreatedAt
+            };
+
+            _commentServiceMock.Setup(s => s.UpdateCommentAsync(It.IsAny<Comment>()))
+                               .ReturnsAsync(updatedComment);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim("UserID", "123")
+            ], "mock"));
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+
+            var result = await _controller.UpdateComment(inputComment);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(comment, okResult.Value);
+            Assert.Equal(updatedComment, okResult.Value);
         }
+
 
         [Fact]
         public async Task UpdateComment_ReturnsBadRequest_WhenCommentIsNull()
@@ -131,7 +191,18 @@ namespace RunningPlanner.Tests.Controllers
         public async Task UpdateComment_ReturnsNotFound_WhenCommentDoesNotExist()
         {
             var comment = new Comment { CommentID = 1 };
-            _commentServiceMock.Setup(s => s.UpdateCommentAsync(comment)).ReturnsAsync((Comment)null!);
+            _commentServiceMock.Setup(s => s.UpdateCommentAsync(It.IsAny<Comment>()))
+                               .ReturnsAsync((Comment)null!);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim("UserID", "123")
+            ], "mock"));
+
+            _controller.ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext() { User = user }
+            };
 
             var result = await _controller.UpdateComment(comment);
 

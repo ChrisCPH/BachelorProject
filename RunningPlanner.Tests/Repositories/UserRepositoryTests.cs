@@ -35,6 +35,22 @@ namespace RunningPlanner.Tests
         }
 
         [Fact]
+        public async Task GetUserNameByIdAsync_ShouldReturnCorrectUser()
+        {
+            var context = GetInMemoryDbContext();
+            var user = new User { UserID = 1, UserName = "UserOne" };
+            context.User.Add(user);
+            await context.SaveChangesAsync();
+
+            var repo = new UserRepository(context);
+
+            var result = await repo.GetUserNameByIdAsync(1);
+
+            Assert.NotNull(result);
+            Assert.Equal("UserOne", result!.UserName);
+        }
+
+        [Fact]
         public async Task GetUserByEmailAsync_ShouldReturnCorrectUser()
         {
             var context = GetInMemoryDbContext();

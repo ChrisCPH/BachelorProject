@@ -9,6 +9,8 @@ import { formatLocalDate, isSunday } from "../utils/FormatLocalDate";
 import { Link } from "react-router-dom";
 import { TrainingPlanWithPermission } from "../types/TrainingPlanWithPermission";
 import { handleAuthError } from "../utils/AuthError";
+import { AddFeedbackForm } from "../components/AddFeedbackForm";
+import { FeedbackConfirmation } from "../components/FeedbackConfirmation";
 
 export default function Calendar() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -24,6 +26,10 @@ export default function Calendar() {
     const [editAccess, setEditAccessPlans] = useState<TrainingPlanWithPermission[]>([]);
     const [noEditAccess, setNoEditAccessPlans] = useState<TrainingPlanWithPermission[]>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [feedbackRun, setFeedbackRun] = useState<Run | null>(null);
+    const [showFeedbackConfirmation, setShowFeedbackConfirmation] = useState(false);
+    const [runToComplete, setRunToComplete] = useState<Run | null>(null);
+    const [showAddFeedback, setShowAddFeedback] = useState(false);
 
     useEffect(() => {
         fetchPlans();
@@ -186,6 +192,22 @@ export default function Calendar() {
         type: "run" | "workout",
         completed: boolean
     ) => {
+
+        try {
+            if (type === "run" && completed) {
+                setRunToComplete(item as Run);
+                setShowFeedbackConfirmation(true);
+                return;
+            }
+
+            await completeItem(item, type, completed);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+
+    const completeItem = async (item: Run | Workout, type: "run" | "workout", completed: boolean) => {
         const itemId = type === "run" ? (item as Run).runID : (item as Workout).workoutID;
 
         try {
@@ -300,15 +322,15 @@ export default function Calendar() {
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div>
                                             <strong>Run {index + 1}</strong>
-                                            <div
-                                                className={`custom-checkbox mt-2 ${run.completed ? "checked" : ""}`}
-                                                onClick={() => {
-                                                    const newStatus = !run.completed;
-                                                    handleComplete(run, "run", newStatus);
-                                                }}
-                                            >
-                                                {run.completed && <span>✅</span>}
-                                            </div>
+                                            <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                <strong>Completed?</strong>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={run.completed}
+                                                    onChange={(e) => handleComplete(run, "run", e.target.checked)}
+                                                    style={{ transform: "scale(1.3)", cursor: "pointer", accentColor: "#4CAF50" }}
+                                                />
+                                            </label>
                                             {typeof run.timeOfDay === "string" && <div>{run.timeOfDay}</div>}
                                             {run.type && <div>Type: {run.type}</div>}
                                             {typeof run.distance === "number" && <div>Distance: {run.distance} km</div>}
@@ -328,20 +350,20 @@ export default function Calendar() {
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div>
                                             <strong>Workout {index + 1}</strong>
-                                            <div
-                                                className={`custom-checkbox mt-2 ${workout.completed ? "checked" : ""}`}
-                                                onClick={() => {
-                                                    const newStatus = !workout.completed;
-                                                    handleComplete(workout, "workout", newStatus);
-                                                }}
-                                            >
-                                                {workout.completed && <span>✅</span>}
-                                            </div>
+                                            <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                <strong>Completed?</strong>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={workout.completed}
+                                                    onChange={(e) => handleComplete(workout, "workout", e.target.checked)}
+                                                    style={{ transform: "scale(1.3)", cursor: "pointer", accentColor: "#4CAF50" }}
+                                                />
+                                            </label>
                                             {typeof workout.timeOfDay === "string" && <div>{workout.timeOfDay}</div>}
                                             {workout.type && <div>Type: {workout.type}</div>}
                                             {typeof workout.duration === "number" && <div>Duration: {FormatDuration(workout.duration)} min</div>}
                                             <Link to={`/exercises/${workout.workoutID}`}>
-                                                <button className="btn btn-sm btn-outline-light mt-2">View Exercises</button>
+                                                <button className="btn btn-sm btn-outline-light mt-1">View Exercises</button>
                                             </Link>
                                         </div>
                                     </div>
@@ -470,6 +492,38 @@ export default function Calendar() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {showAddFeedback && feedbackRun && (
+                <div className="modal">
+                    <AddFeedbackForm
+                        runId={feedbackRun.runID}
+                        onSubmit={() => {
+                            setShowAddFeedback(false);
+                            completeItem(feedbackRun, "run", true);
+                            setFeedbackRun(null);
+                        }}
+                        onClose={() => {
+                            setShowAddFeedback(false);
+                            completeItem(feedbackRun, "run", true);
+                            setFeedbackRun(null);
+                        }}
+                    />
+                </div>
+            )}
+
+            {showFeedbackConfirmation && runToComplete && (
+                <FeedbackConfirmation
+                    onConfirm={() => {
+                        setShowFeedbackConfirmation(false);
+                        setFeedbackRun(runToComplete);
+                        setShowAddFeedback(true);
+                    }}
+                    onCancel={() => {
+                        setShowFeedbackConfirmation(false);
+                        completeItem(runToComplete, "run", true);
+                    }}
+                />
             )}
         </div>
     );

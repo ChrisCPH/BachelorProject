@@ -8,6 +8,7 @@ namespace RunningPlanner.Repositories
     {
         Task<User> AddUserAsync(User user);
         Task<User?> GetUserByIdAsync(int userId);
+        Task<UserAdd?> GetUserNameByIdAsync(int userId);
         Task<User?> GetUserByEmailAsync(string email);
         Task<User?> GetUserByUsernameAsync(string username);
         Task<UserAdd?> GetUserIdByUsernameAsync(string username);
@@ -36,6 +37,22 @@ namespace RunningPlanner.Repositories
             return await _context.User.FindAsync(userId);
         }
 
+        public async Task<UserAdd?> GetUserNameByIdAsync(int userId)
+        {
+            var user = await _context.User.FindAsync(userId);
+
+            if (user == null)
+                return null;
+
+            var userAdd = new UserAdd
+            {
+                UserID = user.UserID,
+                UserName = user.UserName
+            };
+
+            return userAdd;
+        }
+
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await _context.User.FirstOrDefaultAsync(u => u.Email == email);
@@ -61,7 +78,6 @@ namespace RunningPlanner.Repositories
 
             return userAdd;
         }
-
 
         public async Task<(bool Success, string Message)> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission)
         {

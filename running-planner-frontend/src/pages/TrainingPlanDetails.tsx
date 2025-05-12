@@ -9,6 +9,8 @@ import FormatPace from "../utils/FormatPace";
 import FormatDuration from "../utils/FormatDuration";
 import { handleAuthError } from "../utils/AuthError";
 import { AddUserForm } from "../components/AddUserForm";
+import { AddFeedbackForm } from "../components/AddFeedbackForm";
+import { FeedbackConfirmation } from "../components/FeedbackConfirmation";
 
 interface DayItem {
     type: "run" | "workout";
@@ -29,10 +31,14 @@ export default function TrainingPlanDetails() {
     const [showAddRun, setShowAddRun] = useState(false);
     const [showAddUser, setShowAddUser] = useState(false);
     const [showAddWorkout, setShowAddWorkout] = useState(false);
+    const [showAddFeedback, setShowAddFeedback] = useState(false);
     const [planDuration, setPlanDuration] = useState<number | null>(null);
     const [editRun, setEditRun] = useState<Run | null>(null);
     const [editWorkout, setEditWorkout] = useState<Workout | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [feedbackRun, setFeedbackRun] = useState<Run | null>(null);
+    const [showFeedbackConfirmation, setShowFeedbackConfirmation] = useState(false);
+    const [runToComplete, setRunToComplete] = useState<Run | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
@@ -202,43 +208,54 @@ export default function TrainingPlanDetails() {
         type: "run" | "workout",
         completed: boolean
     ) => {
-        const itemId = type === "run" ? (item as Run).runID : (item as Workout).workoutID;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/${type}/complete/${itemId}`, {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(completed),
-            });
-
-            if (await handleAuthError(response, setErrorMessage, `completing ${type}`)) return;
-            if (!response.ok) {
-                throw new Error(`Failed to update ${type} completion status. Status: ${response.status}`);
+            if (type === "run" && completed) {
+                setRunToComplete(item as Run);
+                setShowFeedbackConfirmation(true);
+                return;
             }
 
-            setSchedule((prev) => {
-                const updated = { ...prev };
-                const week = type === "run" ? (item as Run).weekNumber : (item as Workout).weekNumber;
-                const day = type === "run" ? (item as Run).dayOfWeek : (item as Workout).dayOfWeek;
-
-                updated[week][day] = updated[week][day].map((d) => {
-                    if (type === "run" && (d.data as Run).runID === itemId) {
-                        return { ...d, data: { ...d.data, completed } };
-                    }
-                    if (type === "workout" && (d.data as Workout).workoutID === itemId) {
-                        return { ...d, data: { ...d.data, completed } };
-                    }
-                    return d;
-                });
-
-                return updated;
-            });
+            await completeItem(item, type, completed);
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const completeItem = async (item: Run | Workout, type: "run" | "workout", completed: boolean) => {
+        const itemId = type === "run" ? (item as Run).runID : (item as Workout).workoutID;
+
+        const response = await fetch(`${API_BASE_URL}/${type}/complete/${itemId}`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(completed),
+        });
+
+        if (await handleAuthError(response, setErrorMessage, `completing ${type}`)) return;
+        if (!response.ok) {
+            throw new Error(`Failed to update ${type} completion status. Status: ${response.status}`);
+        }
+
+        setSchedule(prev => {
+            const updated = { ...prev };
+            const week = type === "run" ? (item as Run).weekNumber : (item as Workout).weekNumber;
+            const day = type === "run" ? (item as Run).dayOfWeek : (item as Workout).dayOfWeek;
+
+            updated[week][day] = updated[week][day].map(d => {
+                if (type === "run" && (d.data as Run).runID === itemId) {
+                    return { ...d, data: { ...d.data, completed } };
+                }
+                if (type === "workout" && (d.data as Workout).workoutID === itemId) {
+                    return { ...d, data: { ...d.data, completed } };
+                }
+                return d;
+            });
+
+            return updated;
+        });
     };
 
     return (
@@ -326,8 +343,26 @@ export default function TrainingPlanDetails() {
                 <div className="modal">
                     <AddUserForm
                         trainingPlanId={parseInt(id!)}
-                        onSubmit={() => {}}
+                        onSubmit={() => { }}
                         onClose={() => setShowAddUser(false)}
+                    />
+                </div>
+            )}
+
+            {showAddFeedback && feedbackRun && (
+                <div className="modal">
+                    <AddFeedbackForm
+                        runId={feedbackRun.runID}
+                        onSubmit={() => {
+                            setShowAddFeedback(false);
+                            completeItem(feedbackRun, "run", true);
+                            setFeedbackRun(null);
+                        }}
+                        onClose={() => {
+                            setShowAddFeedback(false);
+                            completeItem(feedbackRun, "run", true);
+                            setFeedbackRun(null);
+                        }}
                     />
                 </div>
             )}
@@ -356,6 +391,20 @@ export default function TrainingPlanDetails() {
                         onSubmit={handleEditWorkoutSubmit}
                     />
                 </div>
+            )}
+
+            {showFeedbackConfirmation && runToComplete && (
+                <FeedbackConfirmation
+                    onConfirm={() => {
+                        setShowFeedbackConfirmation(false);
+                        setFeedbackRun(runToComplete);
+                        setShowAddFeedback(true);
+                    }}
+                    onCancel={() => {
+                        setShowFeedbackConfirmation(false);
+                        completeItem(runToComplete, "run", true);
+                    }}
+                />
             )}
 
             <div style={{ width: '100%' }}>
@@ -398,20 +447,40 @@ export default function TrainingPlanDetails() {
                                                                         <p className="mb-2"><strong>{item.type === "run" ? `Run ${itemCount}` : `Workout ${itemCount}`}</strong></p>
                                                                         {item.type === "run" ? (
                                                                             <>
-                                                                                <p className="mb-1"><strong>Run Type:</strong> {(item.data as Run).type ?? "N/A"}</p>
-                                                                                <p className="mb-1"><strong>Time:</strong> {(item.data as Run).timeOfDay ?? "N/A"}</p>
-                                                                                <p className="mb-1"><strong>Distance:</strong> {(item.data as Run).distance ?? "N/A"} km</p>
-                                                                                <p className="mb-1"><strong>Pace:</strong> {typeof (item.data as Run).pace === "number" ? FormatPace((item.data as Run).pace!) : "N/A"}</p>
-                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Run).duration === "number" ? FormatDuration((item.data as Run).duration!) : "N/A"} min</p>
-                                                                                <p className="mb-1"><strong>Notes:</strong> {(item.data as Run).notes ?? "N/A"}</p>
+                                                                                <p className="mb-1"><strong>Run Type:</strong> {(item.data as Run).type ?? "Not specified"}</p>
+                                                                                <p className="mb-1"><strong>Time:</strong> {(item.data as Run).timeOfDay ?? "Not specified"}</p>
+                                                                                <p className="mb-1"><strong>Distance:</strong> {(item.data as Run).distance ?? "Not specified"} km</p>
+                                                                                <p className="mb-1"><strong>Pace:</strong> {typeof (item.data as Run).pace === "number" ? FormatPace((item.data as Run).pace!) : "Not specified"}</p>
+                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Run).duration === "number" ? FormatDuration((item.data as Run).duration!) : "Not specified"} min</p>
+                                                                                <p className="mb-1"><strong>Notes:</strong> {(item.data as Run).notes ?? "Not specified"}</p>
+                                                                                <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                                                    <strong>Completed?</strong>
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={item.data.completed}
+                                                                                        onChange={(e) => handleComplete(item.data, item.type, e.target.checked)}
+                                                                                        style={{ transform: "scale(1.3)", cursor: "pointer", accentColor: "#4CAF50" }}
+                                                                                    />
+                                                                                </label>
+                                                                                <Link to={`/feedbackcomment/${(item.data as Run).runID}`}>
+                                                                                    <button className="btn btn-sm btn-outline-light mt-2">View Feedback and Comments</button>
+                                                                                </Link>
                                                                             </>
                                                                         ) : (
                                                                             <>
-                                                                                <p className="mb-1"><strong>Workout Type:</strong> {(item.data as Workout).type ?? "N/A"}</p>
-                                                                                <p className="mb-1"><strong>Time:</strong> {(item.data as Workout).timeOfDay ?? "N/A"}</p>
-                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Workout).duration === "number" ? FormatDuration((item.data as Workout).duration!) : "N/A"} min</p>
-                                                                                <p className="mb-1"><strong>Notes:</strong> {(item.data as Workout).notes ?? "N/A"}</p>
-
+                                                                                <p className="mb-1"><strong>Workout Type:</strong> {(item.data as Workout).type ?? "Not specified"}</p>
+                                                                                <p className="mb-1"><strong>Time:</strong> {(item.data as Workout).timeOfDay ?? "Not specified"}</p>
+                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Workout).duration === "number" ? FormatDuration((item.data as Workout).duration!) : "Not specified"} min</p>
+                                                                                <p className="mb-1"><strong>Notes:</strong> {(item.data as Workout).notes ?? "Not specified"}</p>
+                                                                                <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                                                    <strong>Completed?</strong>
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={item.data.completed}
+                                                                                        onChange={(e) => handleComplete(item.data, item.type, e.target.checked)}
+                                                                                        style={{ transform: "scale(1.3)", cursor: "pointer", accentColor: "#4CAF50" }}
+                                                                                    />
+                                                                                </label>
                                                                                 <Link to={`/exercises/${(item.data as Workout).workoutID}`}>
                                                                                     <button className="btn btn-sm btn-outline-light mt-2">View Exercises</button>
                                                                                 </Link>
@@ -442,16 +511,6 @@ export default function TrainingPlanDetails() {
                                                                         >
                                                                             <i className="fas fa-trash text-light"></i>
                                                                         </button>
-                                                                        <div
-                                                                            className={`custom-checkbox mt-2 ${item.data.completed ? "checked" : ""}`}
-                                                                            onClick={() => {
-                                                                                const newStatus = !item.data.completed;
-                                                                                handleComplete(item.data, item.type, newStatus);
-                                                                            }}
-                                                                        >
-                                                                            {item.data.completed && <span>✅</span>}
-                                                                        </div>
-
                                                                     </div>
                                                                 </div>
                                                             </div>

@@ -182,20 +182,18 @@ namespace RunningPlanner.Tests
         }
 
         [Fact]
-        public async Task GetUserByIdAsync_ShouldReturnUser_WhenUserExists()
+        public async Task GetUserNameByIdAsync_ShouldReturnUser_WhenUserExists()
         {
-            var user = new User
+            var user = new UserAdd
             {
                 UserID = 1,
                 UserName = "TestUser",
-                Email = "test@example.com",
-                Password = "Password123"
             };
 
-            _userRepositoryMock.Setup(repo => repo.GetUserByIdAsync(1))
+            _userRepositoryMock.Setup(repo => repo.GetUserNameByIdAsync(1))
                 .ReturnsAsync(user);
 
-            var result = await _userService.GetUserByIdAsync(1);
+            var result = await _userService.GetUserNameByIdAsync(1);
 
             Assert.NotNull(result);
             Assert.Equal(user.UserName, result!.UserName);

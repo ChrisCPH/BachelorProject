@@ -45,8 +45,8 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task GetUserById_ShouldReturnOk_WhenUserExists()
         {
-            var user = new User { UserID = 1 };
-            _userServiceMock.Setup(s => s.GetUserByIdAsync(user.UserID)).ReturnsAsync(user);
+            var user = new UserAdd { UserID = 1 };
+            _userServiceMock.Setup(s => s.GetUserNameByIdAsync(user.UserID)).ReturnsAsync(user);
 
             var result = await _userController.GetUserById(user.UserID);
 
@@ -57,7 +57,7 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task GetUserById_ShouldReturnNotFound_WhenUserDoesNotExist()
         {
-            _userServiceMock.Setup(s => s.GetUserByIdAsync(It.IsAny<int>())).ReturnsAsync((User?)null);
+            _userServiceMock.Setup(s => s.GetUserNameByIdAsync(It.IsAny<int>())).ReturnsAsync((UserAdd?)null);
 
             var result = await _userController.GetUserById(1);
 

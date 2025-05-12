@@ -26,8 +26,15 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Feedback data is required.");
             }
 
-            var createdFeedback = await _feedbackService.CreateFeedbackAsync(feedback);
-            return CreatedAtAction(nameof(GetFeedbackById), new { id = createdFeedback.FeedbackID }, createdFeedback);
+            try
+            {
+                var createdFeedback = await _feedbackService.CreateFeedbackAsync(feedback);
+                return CreatedAtAction(nameof(GetFeedbackById), new { id = createdFeedback.FeedbackID }, createdFeedback);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]

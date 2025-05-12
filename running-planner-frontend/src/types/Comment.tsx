@@ -1,8 +1,8 @@
 export interface Comment {
     commentID: number;
-    userID: number;
+    userID?: number;
     runID?: number | null;
     workoutID?: number | null;
-    Text: string;
+    text: string;
     createdAt: string;
 }

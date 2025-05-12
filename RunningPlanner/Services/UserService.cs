@@ -12,7 +12,7 @@ namespace RunningPlanner.Services
     public interface IUserService
     {
         Task<User> CreateUserAsync(User user);
-        Task<User?> GetUserByIdAsync(int userId);
+        Task<UserAdd?> GetUserNameByIdAsync(int userId);
         Task<UserAdd?> GetUserIdByNameAsync(string username);
         Task<string> LoginAsync(string email, string password);
         Task<(bool Success, string Message)> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission);
@@ -69,9 +69,9 @@ namespace RunningPlanner.Services
             return await _userRepository.AddUserAsync(user);
         }
 
-        public async Task<User?> GetUserByIdAsync(int userId)
+        public async Task<UserAdd?> GetUserNameByIdAsync(int userId)
         {
-            return await _userRepository.GetUserByIdAsync(userId);
+            return await _userRepository.GetUserNameByIdAsync(userId);
         }
 
         public async Task<string> LoginAsync(string email, string password)

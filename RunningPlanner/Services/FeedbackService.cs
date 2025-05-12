@@ -28,8 +28,15 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(feedback), "Feedback data is required.");
             }
 
+            var existingFeedback = await _feedbackRepository.GetFeedbackByRunAsync(feedback.RunID);
+            if (existingFeedback != null)
+            {
+                throw new InvalidOperationException("Feedback for this run already exists.");
+            }
+
             return await _feedbackRepository.AddFeedbackAsync(feedback);
         }
+
 
         public async Task<Feedback?> GetFeedbackByIdAsync(int feedbackId)
         {

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Workout } from "../types/Workout";
 import { dayNames } from "../utils/DayNames";
 import { handleAuthError } from "../utils/AuthError";
+import FormatDuration from "../utils/FormatDuration";
+import { ParseTimeToSeconds } from "../utils/ParseTimeToSeconds";
 
 interface AddWorkoutFormProps {
     trainingPlanId: number;
@@ -21,7 +23,6 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
     const [durationInput, setDurationInput] = useState(""); // string like "30:00"
     const [duration, setDuration] = useState(0); // actual seconds
     const [notes, setNotes] = useState("");
-    const [error, setError] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -32,14 +33,14 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
             setDayOfWeek(initialData.dayOfWeek);
             setTimeOfDay(initialData.timeOfDay || "");
             setNotes(initialData.notes || "");
-            setDurationInput(initialData.duration ? formatDuration(initialData.duration) : "");
+            setDurationInput(initialData.duration ? FormatDuration(initialData.duration) : "");
             setDuration(initialData.duration || 0);
         }
     }, [initialData]);
 
     const handleSubmit = async () => {
         if (!weekNumber || dayOfWeek === null) {
-            setError("Week number and day of week are required.");
+            setErrorMessage("Week number and day of week are required.");
             return;
         }
 
@@ -84,24 +85,6 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
         }
     };
 
-    const parseTimeToSeconds = (input: string): number => {
-        if (!input) return 0;
-
-        if (!input.includes(":")) {
-            return Number(input) * 60;
-        }
-
-        const [minutes, seconds] = input.split(":").map(Number);
-        if (isNaN(minutes) || isNaN(seconds)) return 0;
-        return minutes * 60 + seconds;
-    };
-
-    const formatDuration = (seconds: number): string => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-    };
-
     return (
         <div className="modal-content bg-dark text-white p-4 rounded-3 shadow-lg">
             <div>
@@ -111,8 +94,6 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
                 <h5>{initialData ? "Edit Workout" : "Add Workout"}</h5>
                 <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
             </div>
-
-            {error && <div className="alert alert-danger">{error}</div>}
 
             <div className="form-group mb-3">
                 <label>Week Number</label>
@@ -173,7 +154,7 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
                     onChange={(e) => {
                         const value = e.target.value;
                         setDurationInput(value);
-                        setDuration(parseTimeToSeconds(value));
+                        setDuration(ParseTimeToSeconds(value));
                     }}
                     className="form-control white-placeholder bg-secondary text-white border-0 rounded-2"
                 />

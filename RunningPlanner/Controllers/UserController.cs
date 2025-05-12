@@ -45,7 +45,7 @@ namespace RunningPlanner.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserNameByIdAsync(id);
             if (user == null)
             {
                 return NotFound();

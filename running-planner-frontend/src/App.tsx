@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 import Calendar from "./pages/Calendar.tsx";
+import FeedbackCommentsDetails from "./pages/FeedbackCommentDetails.tsx";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/training-plan/:id" element={<TrainingPlanDetails />} />
         <Route path="/exercises/:id" element={<WorkoutDetails />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/feedbackcomment/:id" element={<FeedbackCommentsDetails />} />
       </Route>
     </Routes>
   );
