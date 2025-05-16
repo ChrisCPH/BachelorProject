@@ -11,6 +11,7 @@ namespace RunningPlanner.Repositories
         Task<List<Run>?> GetAllRunsByTrainingPlanAsync(int trainingPlanId);
         Task<Run> UpdateRunAsync(Run run);
         Task<bool> DeleteRunAsync(int runId);
+        Task RemoveRouteIdFromRunsAsync(string routeId);
     }
 
     public class RunRepository : IRunRepository
@@ -60,6 +61,18 @@ namespace RunningPlanner.Repositories
             _context.Run.Remove(run);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task RemoveRouteIdFromRunsAsync(string routeId)
+        {
+            var runsWithRoute = await _context.Run.Where(r => r.RouteID == routeId).ToListAsync();
+
+            foreach (var run in runsWithRoute)
+            {
+                run.RouteID = null;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

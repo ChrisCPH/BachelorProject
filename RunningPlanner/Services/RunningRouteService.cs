@@ -15,10 +15,12 @@ namespace RunningPlanner.Services
     public class RunningRouteService : IRunningRouteService
     {
         private readonly IRunningRouteRepository _runningRouteRepository;
+        private readonly IRunRepository _runRepository;
 
-        public RunningRouteService(IRunningRouteRepository runningRouteRepository)
+        public RunningRouteService(IRunningRouteRepository runningRouteRepository, IRunRepository runRepository)
         {
             _runningRouteRepository = runningRouteRepository;
+            _runRepository = runRepository;
         }
 
         public async Task<List<RunningRoute>?> GetAllAsync()
@@ -58,6 +60,9 @@ namespace RunningPlanner.Services
             {
                 throw new KeyNotFoundException($"Route with id {id} not found");
             }
+
+            await _runRepository.RemoveRouteIdFromRunsAsync(id);
+
             await _runningRouteRepository.DeleteAsync(id);
         }
     }

@@ -134,17 +134,18 @@ namespace RunningPlanner.Tests.Controllers
         public async Task UpdateRunCompletedStatus_ReturnsOk_WhenRunIsUpdated()
         {
             var run = new Run { RunID = 1, Completed = false };
-            var updatedRun = new Run { RunID = 1, Completed = true };
+            var expectedUpdatedRun = new Run { RunID = 1, Completed = true };
 
             _runServiceMock.Setup(s => s.GetRunByIdAsync(run.RunID))
                 .ReturnsAsync(run);
-            _runServiceMock.Setup(s => s.UpdateRunAsync(run))
-                .ReturnsAsync(updatedRun);
+
+            _runServiceMock.Setup(s => s.UpdateRunAsync(It.Is<Run>(r => r.Completed == true)))
+                .ReturnsAsync(expectedUpdatedRun);
 
             var result = await _runController.UpdateRunCompletedStatus(run.RunID, true);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(updatedRun, okResult.Value);
+            Assert.Equal(expectedUpdatedRun, okResult.Value);
         }
 
         [Fact]
@@ -156,6 +157,37 @@ namespace RunningPlanner.Tests.Controllers
                 .ReturnsAsync((Run)null!);
 
             var result = await _runController.UpdateRunCompletedStatus(runId, true);
+
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Run not found.", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateRunRoute_ReturnsOk_WhenRunIsUpdated()
+        {
+            var run = new Run { RunID = 1, RouteID = "qwertyui" };
+            var updatedRun = new Run { RunID = 1, RouteID = "updatedroute" };
+
+            _runServiceMock.Setup(s => s.GetRunByIdAsync(run.RunID))
+                .ReturnsAsync(run);
+            _runServiceMock.Setup(s => s.UpdateRunAsync(It.Is<Run>(r => r.RouteID == "updatedroute")))
+                .ReturnsAsync(updatedRun);
+
+            var result = await _runController.UpdateRunRouteId(run.RunID, "updatedroute");
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(updatedRun, okResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateRunRoute_ReturnsNotFound_WhenRunDoesNotExist()
+        {
+            var runId = 1;
+
+            _runServiceMock.Setup(s => s.GetRunByIdAsync(runId))
+                .ReturnsAsync((Run)null!);
+
+            var result = await _runController.UpdateRunRouteId(runId, "updatedroute");
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Run not found.", notFoundResult.Value);

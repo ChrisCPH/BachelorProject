@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -109,5 +110,45 @@ namespace RunningPlanner.Tests
 
             Assert.False(result);
         }
+
+        [Fact]
+        public async Task RemoveRouteIdFromRunsAsync_ShouldNullifyRouteIdForMatchingRuns()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new RunRepository(context);
+
+            context.Run.AddRange(
+                new Run { RunID = 1, RouteID = "route123" },
+                new Run { RunID = 2, RouteID = "route123" },
+                new Run { RunID = 3, RouteID = "otherRoute" }
+            );
+            await context.SaveChangesAsync();
+
+            await repo.RemoveRouteIdFromRunsAsync("route123");
+
+            var runs = await context.Run.ToListAsync();
+
+            Assert.All(runs.Where(r => r.RunID == 1 || r.RunID == 2), run => Assert.Null(run.RouteID));
+            Assert.Equal("otherRoute", runs.First(r => r.RunID == 3).RouteID);
+        }
+
+        [Fact]
+        public async Task RemoveRouteIdFromRunsAsync_ShouldNotChangeIfNoMatch()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new RunRepository(context);
+
+            context.Run.AddRange(
+                new Run { RunID = 1, RouteID = "someRoute" },
+                new Run { RunID = 2, RouteID = "anotherRoute" }
+            );
+            await context.SaveChangesAsync();
+
+            await repo.RemoveRouteIdFromRunsAsync("nonexistentRoute");
+
+            var runs = await context.Run.ToListAsync();
+            Assert.All(runs, run => Assert.NotNull(run.RouteID));
+        }
+
     }
 }

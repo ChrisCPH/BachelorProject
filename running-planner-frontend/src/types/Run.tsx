@@ -10,6 +10,6 @@ export interface Run {
     distance?: number | null; // in kilometers
     notes?: string | null;
     completed: boolean; // true if the run has been completed, false otherwise
-    routeId?: number | null; // ID of the route associated with this run
+    routeID?: string | null; // ID of the route associated with this run
     createdAt: string;
 }

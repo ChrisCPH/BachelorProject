@@ -18,7 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
-        [TrainingPlanPermissionAuthorize ("editor", "owner")]
+        [TrainingPlanPermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> CreateRun([FromBody] Run run)
         {
             if (run == null)
@@ -43,7 +43,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpGet("trainingplan/{id}")]
-        [TrainingPlanPermissionAuthorize ("viewer", "commenter", "editor", "owner")]
+        [TrainingPlanPermissionAuthorize("viewer", "commenter", "editor", "owner")]
         public async Task<IActionResult> GetAllRunsByTrainingPlan(int id)
         {
             var runs = await _runService.GetAllRunsByTrainingPlanAsync(id);
@@ -90,6 +90,22 @@ namespace RunningPlanner.Controllers
             }
 
             run.Completed = completed;
+            var updatedRun = await _runService.UpdateRunAsync(run);
+
+            return Ok(updatedRun);
+        }
+
+        [HttpPatch("{id}/route")]
+        [RunPermissionAuthorize("owner")]
+        public async Task<IActionResult> UpdateRunRouteId(int id, [FromBody] string routeId)
+        {
+            var run = await _runService.GetRunByIdAsync(id);
+            if (run == null)
+            {
+                return NotFound("Run not found.");
+            }
+
+            run.RouteID = routeId;
             var updatedRun = await _runService.UpdateRunAsync(run);
 
             return Ok(updatedRun);

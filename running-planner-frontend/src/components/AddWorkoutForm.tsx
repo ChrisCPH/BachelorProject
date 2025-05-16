@@ -13,7 +13,7 @@ interface AddWorkoutFormProps {
     initialData?: Workout;
 }
 
-const workoutTypes = ["Strength", "Cardio", "Flexibility", "Endurance"];
+const workoutTypes = ["Strength", "Weights", "Cardio", "Flexibility", "Endurance", "Yoga", "Pilates", "HIIT", "Calisthenics", "Balance", "Aerobic", "Other"];
 
 export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, initialData }: AddWorkoutFormProps) => {
     const [type, setType] = useState("");
@@ -136,7 +136,7 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
             </div>
 
             <div className="form-group mb-3">
-                <label>Time of Day</label>
+                <label>Time of Day (optional)</label>
                 <input
                     type="time"
                     value={timeOfDay}
@@ -146,7 +146,7 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
             </div>
 
             <div className="form-group mb-3">
-                <label>Duration (mm:ss)</label>
+                <label>Duration (mm:ss) (optional)</label>
                 <input
                     type="text"
                     placeholder="e.g., 30:00"
@@ -161,7 +161,7 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
             </div>
 
             <div className="form-group mb-3">
-                <label>Notes</label>
+                <label>Notes (optional)</label>
                 <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}

@@ -255,9 +255,9 @@ export default function FeedbackCommentsDetails() {
                                         <div>
                                             <p><strong>Effort: </strong> {feedback.effortRating ?? "Not specified"}/10</p>
                                             <p><strong>Feel: </strong> {feedback.feelRating ?? "Not specified"}/10</p>
-                                            <p><strong>Pace:</strong> {typeof feedback.pace === "number" ? FormatPace(feedback.pace!) : "Not specified"} min/km</p>
-                                            <p><strong>Duration:</strong> {typeof feedback.duration === "number" ? FormatDuration(feedback.duration!) : "Not specified"} min</p>
-                                            <p><strong>Distance: </strong> {feedback.distance ?? "Not specified"}</p>
+                                            <p><strong>Actual Pace:</strong> {typeof feedback.pace === "number" ? FormatPace(feedback.pace!) : "Not specified"} min/km</p>
+                                            <p><strong>Actual Duration:</strong> {typeof feedback.duration === "number" ? FormatDuration(feedback.duration!) : "Not specified"} min</p>
+                                            <p><strong>Actual Distance: </strong> {feedback.distance ?? "Not specified"}</p>
                                             <p><strong>Comment: </strong> {feedback.comment ?? "Not specified"}</p>
                                         </div>
                                         <div className="d-flex flex-column align-items-center">

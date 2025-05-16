@@ -14,7 +14,7 @@ interface AddRunFormProps {
     initialData?: Run;
 }
 
-const runTypes = ["Easy", "Moderate", "Hard"];
+const runTypes = ["Recovery", "Easy", "Moderate", "Hard", "Base", "Interval", "Long run", "Fartlek", "Hill sprints", "Tempo", "Threshold", "Speed", "Strides", "Progressive", "Other"];
 
 export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, initialData }: AddRunFormProps) => {
     const [type, setType] = useState("");
@@ -135,7 +135,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Type</label>
+                <label>Type (optional)</label>
                 <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
@@ -151,7 +151,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Time of Day</label>
+                <label>Time of Day (optional)</label>
                 <input
                     type="time"
                     value={timeOfDay}
@@ -161,7 +161,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Distance (km)</label>
+                <label>Distance (km) (optional)</label>
                 <input
                     type="number"
                     value={distance}
@@ -171,7 +171,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Pace (min/km)</label>
+                <label>Pace (min/km) (optional)</label>
                 <input
                     type="text"
                     placeholder="e.g., 5:20"
@@ -186,7 +186,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Duration (mm:ss)</label>
+                <label>Duration (mm:ss) (optional)</label>
                 <input
                     type="text"
                     placeholder="e.g., 30:00"
@@ -201,7 +201,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Notes</label>
+                <label>Notes (optional)</label>
                 <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}

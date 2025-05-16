@@ -44,8 +44,26 @@ public class RunningRouteController : ControllerBase
             return BadRequest("Route data is required.");
         }
 
-        await _runningRouteService.AddAsync(route);
-        return CreatedAtAction(nameof(GetById), new { id = route.ID }, route);
+        var userIdClaim = User.FindFirst("UserID");
+        if (userIdClaim == null)
+        {
+            return Unauthorized("User ID not found in token.");
+        }
+
+        int userId = int.Parse(userIdClaim.Value);
+
+        var routeWithUserID = new RunningRoute
+        {
+            ID = route.ID,
+            UserID = userId,
+            Name = route.Name,
+            Geometry = route.Geometry,
+            CreatedAt = route.CreatedAt,
+            DistanceKm = route.DistanceKm
+        };
+
+        await _runningRouteService.AddAsync(routeWithUserID);
+        return CreatedAtAction(nameof(GetById), new { id = routeWithUserID.ID }, routeWithUserID);
     }
 
     [HttpPut("update")]
@@ -56,10 +74,28 @@ public class RunningRouteController : ControllerBase
             return BadRequest("Route data is required.");
         }
 
+        var userIdClaim = User.FindFirst("UserID");
+        if (userIdClaim == null)
+        {
+            return Unauthorized("User ID not found in token.");
+        }
+
+        int userId = int.Parse(userIdClaim.Value);
+
+        var routeWithUserID = new RunningRoute
+        {
+            ID = route.ID,
+            UserID = userId,
+            Name = route.Name,
+            Geometry = route.Geometry,
+            CreatedAt = route.CreatedAt,
+            DistanceKm = route.DistanceKm
+        };
+
         try
         {
-            await _runningRouteService.UpdateAsync(route.ID, route);
-            return CreatedAtAction(nameof(GetById), new { id = route.ID }, route);
+            await _runningRouteService.UpdateAsync(routeWithUserID.ID, routeWithUserID);
+            return CreatedAtAction(nameof(GetById), new { id = routeWithUserID.ID }, routeWithUserID);
         }
         catch (KeyNotFoundException)
         {

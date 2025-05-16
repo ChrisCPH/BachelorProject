@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RunningPlanner.Controllers;
@@ -56,13 +58,32 @@ namespace RunningPlanner.Tests
         [Fact]
         public async Task Add_ShouldReturnCreated_IfRouteIsValid()
         {
-            var route = new RunningRoute { ID = "newroute" };
+            var route = new RunningRoute
+            {
+                ID = "newroute",
+                Name = "Test Route",
+                CreatedAt = DateTime.UtcNow,
+                DistanceKm = 5.0
+            };
+
+            var userId = 123;
+
+            var claims = new List<Claim> { new Claim("UserID", userId.ToString()) };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
 
             var result = await _controller.Add(route);
 
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
             var value = Assert.IsType<RunningRoute>(createdResult.Value);
+
             Assert.Equal("newroute", value.ID);
+            Assert.Equal(userId, value.UserID);
         }
 
         [Fact]
@@ -77,13 +98,32 @@ namespace RunningPlanner.Tests
         [Fact]
         public async Task Update_ShouldReturnCreated_IfUpdateSucceeds()
         {
-            var route = new RunningRoute { ID = "update1" };
+            var route = new RunningRoute
+            {
+                ID = "update1",
+                Name = "Updated Route",
+                CreatedAt = DateTime.UtcNow,
+                DistanceKm = 8.0
+            };
+
+            var userId = 456;
+
+            var claims = new List<Claim> { new Claim("UserID", userId.ToString()) };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
 
             var result = await _controller.Update(route);
 
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
             var value = Assert.IsType<RunningRoute>(createdResult.Value);
+
             Assert.Equal("update1", value.ID);
+            Assert.Equal(userId, value.UserID);
         }
 
         [Fact]
@@ -99,10 +139,22 @@ namespace RunningPlanner.Tests
         public async Task Update_ShouldReturnNotFound_IfRouteNotFound()
         {
             var route = new RunningRoute { ID = "missing" };
-            _serviceMock.Setup(s => s.UpdateAsync("missing", route)).ThrowsAsync(new KeyNotFoundException());
+
+            var userId = 789;
+            var claims = new List<Claim> { new Claim("UserID", userId.ToString()) };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            _serviceMock.Setup(s => s.UpdateAsync("missing", It.IsAny<RunningRoute>()))
+                .ThrowsAsync(new KeyNotFoundException());
 
             var result = await _controller.Update(route);
-
+            
             Assert.IsType<NotFoundResult>(result);
         }
 

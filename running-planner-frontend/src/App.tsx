@@ -12,6 +12,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 import Calendar from "./pages/Calendar.tsx";
 import FeedbackCommentsDetails from "./pages/FeedbackCommentDetails.tsx";
+import RoutePlanner from "./pages/RoutePlanner.tsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/exercises/:id" element={<WorkoutDetails />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/feedbackcomment/:id" element={<FeedbackCommentsDetails />} />
+        <Route path="/routeplanner" element={<RoutePlanner />} />
       </Route>
     </Routes>
   );

@@ -11,6 +11,7 @@ import { TrainingPlanWithPermission } from "../types/TrainingPlanWithPermission"
 import { handleAuthError } from "../utils/AuthError";
 import { AddFeedbackForm } from "../components/AddFeedbackForm";
 import { FeedbackConfirmation } from "../components/FeedbackConfirmation";
+import { RunningRoute } from "../types/RunningRoute";
 
 export default function Calendar() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -30,6 +31,10 @@ export default function Calendar() {
     const [showFeedbackConfirmation, setShowFeedbackConfirmation] = useState(false);
     const [runToComplete, setRunToComplete] = useState<Run | null>(null);
     const [showAddFeedback, setShowAddFeedback] = useState(false);
+    const [routes, setRoutes] = useState<RunningRoute[]>([]);
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [currentRunForRoute, setCurrentRunForRoute] = useState<Run | null>(null);
+    const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchPlans();
@@ -96,19 +101,25 @@ export default function Calendar() {
 
     const fetchPlanData = async (id: number) => {
         try {
-            const [runsRes, workoutsRes] = await Promise.all([
+            const [runsRes, workoutsRes, routesRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/run/trainingPlan/${id}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                 }),
                 fetch(`${API_BASE_URL}/workout/trainingPlan/${id}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                 }),
+                fetch(`${API_BASE_URL}/runningroute/getAll`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                }),
             ]);
 
             const runsData = await runsRes.json();
             const workoutsData = await workoutsRes.json();
+            const routesData = await routesRes.json();
+
             setRuns(runsData);
             setWorkouts(workoutsData);
+            setRoutes(routesData);
         } catch (error) {
             console.error("Error fetching runs or workouts:", error);
         }
@@ -336,6 +347,31 @@ export default function Calendar() {
                                             {typeof run.distance === "number" && <div>Distance: {run.distance} km</div>}
                                             {typeof run.pace === "number" && <div>Pace: {FormatPace(run.pace)}</div>}
                                             {typeof run.duration === "number" && <div>Duration: {FormatDuration(run.duration)} min</div>}
+                                            {run.routeID && (
+                                                <div className="mt-1">
+                                                    <strong>Route: </strong>
+                                                    <Link
+                                                        to={`/routeplanner`}
+                                                        style={{ color: 'white' }}
+                                                    >
+                                                        {routes.find(r => r.id === run.routeID)?.name || "Unknown Route"}
+                                                    </Link>
+                                                </div>
+                                            )}
+                                            <button
+                                                className="btn btn-sm btn-outline-info mt-1"
+                                                onClick={() => {
+                                                    setCurrentRunForRoute(run);
+                                                    setShowRouteModal(true);
+                                                }}
+                                            >
+                                                {run.routeID ? "Change Route" : "Add Route"}
+                                            </button>
+                                            <Link to={`/feedbackcomment/${run.runID}`}>
+                                                <button className="btn btn-sm btn-outline-light mt-2">
+                                                    View Feedback and Comments
+                                                </button>
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>
@@ -374,6 +410,38 @@ export default function Calendar() {
                 </div>
             </td>
         );
+    };
+
+    const assignRouteToRun = async () => {
+        if (!currentRunForRoute || !selectedRouteId) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/run/${currentRunForRoute.runID}/route`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify(selectedRouteId),
+            });
+
+            if (!response.ok) throw new Error("Failed to assign route");
+
+            setRuns(prevRuns =>
+                prevRuns.map(run =>
+                    run.runID === currentRunForRoute.runID
+                        ? { ...run, routeID: selectedRouteId }
+                        : run
+                )
+            );
+
+            setShowRouteModal(false);
+            setSelectedRouteId(null);
+            setCurrentRunForRoute(null);
+        } catch (error) {
+            console.error("Error assigning route:", error);
+            setErrorMessage("Failed to assign route");
+        }
     };
 
     return (
@@ -525,6 +593,66 @@ export default function Calendar() {
                     }}
                 />
             )}
+
+            {showRouteModal && (
+                <div className="modal show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content bg-dark text-white">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Select a Route</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close btn-close-white"
+                                    onClick={() => {
+                                        setShowRouteModal(false);
+                                        setSelectedRouteId(null);
+                                    }}
+                                />
+                            </div>
+                            <div className="modal-body">
+                                {routes.length === 0 ? (
+                                    <p>No routes available. Create some routes first.</p>
+                                ) : (
+                                    <div className="list-group">
+                                        {routes.map(route => (
+                                            <button
+                                                key={route.id}
+                                                className={`list-group-item list-group-item-action ${selectedRouteId === route.id ? 'active' : ''}`}
+                                                onClick={() => setSelectedRouteId(route.id)}
+                                            >
+                                                <div className="d-flex justify-content-between">
+                                                    <span>{route.name}</span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => {
+                                        setShowRouteModal(false);
+                                        setSelectedRouteId(null);
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    disabled={!selectedRouteId}
+                                    onClick={assignRouteToRun}
+                                >
+                                    Assign Route
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
         </div>
     );
 }

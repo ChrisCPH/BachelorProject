@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Run } from "../types/Run";
 import { Workout } from "../types/Workout";
@@ -11,6 +11,7 @@ import { handleAuthError } from "../utils/AuthError";
 import { AddUserForm } from "../components/AddUserForm";
 import { AddFeedbackForm } from "../components/AddFeedbackForm";
 import { FeedbackConfirmation } from "../components/FeedbackConfirmation";
+import { RunningRoute } from "../types/RunningRoute";
 
 interface DayItem {
     type: "run" | "workout";
@@ -39,12 +40,16 @@ export default function TrainingPlanDetails() {
     const [feedbackRun, setFeedbackRun] = useState<Run | null>(null);
     const [showFeedbackConfirmation, setShowFeedbackConfirmation] = useState(false);
     const [runToComplete, setRunToComplete] = useState<Run | null>(null);
+    const [routes, setRoutes] = useState<RunningRoute[]>([]);
+    const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [currentRunId, setCurrentRunId] = useState<number | null>(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [planResponse, runsResponse, workoutsResponse] = await Promise.all([
+                const [planResponse, runsResponse, workoutsResponse, routesResponse] = await Promise.all([
                     fetch(`${API_BASE_URL}/trainingplan/${id}`, {
                         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                     }),
@@ -54,6 +59,9 @@ export default function TrainingPlanDetails() {
                     fetch(`${API_BASE_URL}/workout/trainingPlan/${id}`, {
                         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                     }),
+                    fetch(`${API_BASE_URL}/runningroute/getAll`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                    })
                 ]);
 
                 if (!planResponse.ok) {
@@ -62,27 +70,25 @@ export default function TrainingPlanDetails() {
                 const planData = await planResponse.json();
                 setPlanDuration(planData.duration);
 
+                const runs: Run[] = runsResponse.ok ? await runsResponse.json() : [];
+                const workouts: Workout[] = workoutsResponse.ok ? await workoutsResponse.json() : [];
+
+                const routesData = routesResponse.ok ? await routesResponse.json() : [];
+                setRoutes(routesData);
+
                 const combined: WeekSchedule = {};
 
-                // Handle runs response, even if no runs are found
-                if (runsResponse.ok) {
-                    const runs: Run[] = await runsResponse.json();
-                    runs.forEach(run => {
-                        if (!combined[run.weekNumber]) combined[run.weekNumber] = {};
-                        if (!combined[run.weekNumber][run.dayOfWeek]) combined[run.weekNumber][run.dayOfWeek] = [];
-                        combined[run.weekNumber][run.dayOfWeek].push({ type: "run", data: run });
-                    });
-                }
+                runs.forEach(run => {
+                    if (!combined[run.weekNumber]) combined[run.weekNumber] = {};
+                    if (!combined[run.weekNumber][run.dayOfWeek]) combined[run.weekNumber][run.dayOfWeek] = [];
+                    combined[run.weekNumber][run.dayOfWeek].push({ type: "run", data: run });
+                });
 
-                // Handle workouts response, even if no workouts are found
-                if (workoutsResponse.ok) {
-                    const workouts: Workout[] = await workoutsResponse.json();
-                    workouts.forEach(workout => {
-                        if (!combined[workout.weekNumber]) combined[workout.weekNumber] = {};
-                        if (!combined[workout.weekNumber][workout.dayOfWeek]) combined[workout.weekNumber][workout.dayOfWeek] = [];
-                        combined[workout.weekNumber][workout.dayOfWeek].push({ type: "workout", data: workout });
-                    });
-                }
+                workouts.forEach(workout => {
+                    if (!combined[workout.weekNumber]) combined[workout.weekNumber] = {};
+                    if (!combined[workout.weekNumber][workout.dayOfWeek]) combined[workout.weekNumber][workout.dayOfWeek] = [];
+                    combined[workout.weekNumber][workout.dayOfWeek].push({ type: "workout", data: workout });
+                });
 
                 setSchedule(combined);
 
@@ -96,9 +102,6 @@ export default function TrainingPlanDetails() {
 
         fetchData();
     }, [id]);
-
-    if (loading) return <div className="text-light container mt-5">Loading...</div>;
-    if (error) return <div className="text-danger container mt-5">{error}</div>;
 
     const handleEditRunSubmit = async (updatedRun: Run) => {
         try {
@@ -258,6 +261,121 @@ export default function TrainingPlanDetails() {
         });
     };
 
+    const assignRouteToRun = async (runId: number, routeID: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/run/${runId}/route`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify(routeID),
+            });
+
+            if (await handleAuthError(response, setErrorMessage, "assigning route")) return;
+            if (!response.ok) throw new Error("Failed to assign route");
+
+            setSchedule(prev => {
+                const updated = { ...prev };
+                Object.keys(updated).forEach(week => {
+                    const weekNum = parseInt(week);
+                    Object.keys(updated[weekNum]).forEach(day => {
+                        const dayNum = parseInt(day);
+                        updated[weekNum][dayNum] = updated[weekNum][dayNum].map(item => {
+                            if (item.type === "run" && (item.data as Run).runID === runId) {
+                                const updatedRun: Run = {
+                                    ...(item.data as Run),
+                                    routeID
+                                };
+                                return {
+                                    ...item,
+                                    data: updatedRun
+                                };
+                            }
+                            return item;
+                        });
+                    });
+                });
+                return updated;
+            });
+
+            setShowRouteModal(false);
+            setSelectedRoute(null);
+        } catch (err) {
+            console.error("Error assigning route:", err);
+            setError("Failed to assign route");
+        }
+    };
+
+    const RouteSelectionModal = () => (
+        <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog">
+                <div className="modal-content bg-dark text-light">
+                    <div className="modal-header">
+                        <h5 className="modal-title">Select a Route</h5>
+                        <button
+                            type="button"
+                            className="btn-close btn-close-white"
+                            onClick={() => {
+                                setShowRouteModal(false);
+                                setSelectedRoute(null);
+                            }}
+                        />
+                    </div>
+                    <div className="modal-body">
+                        <div className="list-group">
+                            {routes.map(route => (
+                                <button
+                                    key={route.id}
+                                    className={`list-group-item list-group-item-action ${selectedRoute === route.id ? 'active' : ''}`}
+                                    onClick={() => setSelectedRoute(route.id)}
+                                >
+                                    <div className="d-flex justify-content-between">
+                                        <span>{route.name}</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => {
+                                setShowRouteModal(false);
+                                setSelectedRoute(null);
+                            }}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            disabled={!selectedRoute}
+                            onClick={() => currentRunId && assignRouteToRun(currentRunId, selectedRoute!)}
+                        >
+                            Assign Route
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const routeMap = useMemo(() => {
+        const map = new Map<string, string>();
+        routes.forEach(route => map.set(route.id, route.name));
+        return map;
+    }, [routes]);
+
+    if (loading) {
+        return <p>Loading schedule...</p>;
+    }
+
+    if (error) {
+        return <div className="text-danger container mt-5">{error}</div>;
+    }
+
     return (
         <div className="container mt-5 text-light">
             <div>
@@ -407,6 +525,8 @@ export default function TrainingPlanDetails() {
                 />
             )}
 
+            {showRouteModal && <RouteSelectionModal />}
+
             <div style={{ width: '100%' }}>
                 {Array.from({ length: planDuration || 0 }, (_, weekIndex) => {
                     const weekNumber = weekIndex + 1;
@@ -444,15 +564,38 @@ export default function TrainingPlanDetails() {
                                                             >
                                                                 <div className="d-flex justify-content-between align-items-start">
                                                                     <div>
-                                                                        <p className="mb-2"><strong>{item.type === "run" ? `Run ${itemCount}` : `Workout ${itemCount}`}</strong></p>
+                                                                        <p className="mb-2">
+                                                                            <strong>
+                                                                                {item.type === "run" ? `Run ${itemCount}` : `Workout ${itemCount}`}
+                                                                            </strong>
+                                                                        </p>
                                                                         {item.type === "run" ? (
                                                                             <>
-                                                                                <p className="mb-1"><strong>Run Type:</strong> {(item.data as Run).type ?? "Not specified"}</p>
-                                                                                <p className="mb-1"><strong>Time:</strong> {(item.data as Run).timeOfDay ?? "Not specified"}</p>
-                                                                                <p className="mb-1"><strong>Distance:</strong> {(item.data as Run).distance ?? "Not specified"} km</p>
-                                                                                <p className="mb-1"><strong>Pace:</strong> {typeof (item.data as Run).pace === "number" ? FormatPace((item.data as Run).pace!) : "Not specified"}</p>
-                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Run).duration === "number" ? FormatDuration((item.data as Run).duration!) : "Not specified"} min</p>
-                                                                                <p className="mb-1"><strong>Notes:</strong> {(item.data as Run).notes ?? "Not specified"}</p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Run Type:</strong> {(item.data as Run).type ?? "Not specified"}
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Time:</strong> {(item.data as Run).timeOfDay ?? "Not specified"}
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Distance:</strong> {(item.data as Run).distance ?? "Not specified"} km
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Pace:</strong>{" "}
+                                                                                    {typeof (item.data as Run).pace === "number"
+                                                                                        ? FormatPace((item.data as Run).pace!)
+                                                                                        : "Not specified"}
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Duration:</strong>{" "}
+                                                                                    {typeof (item.data as Run).duration === "number"
+                                                                                        ? FormatDuration((item.data as Run).duration!)
+                                                                                        : "Not specified"}{" "}
+                                                                                    min
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Notes:</strong> {(item.data as Run).notes ?? "Not specified"}
+                                                                                </p>
                                                                                 <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                                                                     <strong>Completed?</strong>
                                                                                     <input
@@ -462,16 +605,54 @@ export default function TrainingPlanDetails() {
                                                                                         style={{ transform: "scale(1.3)", cursor: "pointer", accentColor: "#4CAF50" }}
                                                                                     />
                                                                                 </label>
+                                                                                {(item.data as Run).routeID && (
+                                                                                    <p className="mb-1">
+                                                                                        <strong>Route: </strong>
+                                                                                        <Link
+                                                                                            to={`/routeplanner`}
+                                                                                        >
+                                                                                            {routeMap.get((item.data as Run).routeID!) || "Unknown Route"}
+                                                                                        </Link>
+                                                                                    </p>
+                                                                                )}
+                                                                                <button
+                                                                                    className="btn btn-sm btn-outline-info mt-2"
+                                                                                    onClick={() => {
+                                                                                        setCurrentRunId((item.data as Run).runID);
+                                                                                        setShowRouteModal(true);
+                                                                                    }}
+                                                                                    title={
+                                                                                        (item.data as Run).routeID
+                                                                                            ? `Current route: ${routeMap.get((item.data as Run).routeID!) ?? "Unknown"}`
+                                                                                            : "Add a route"
+                                                                                    }
+                                                                                >
+                                                                                    {(item.data as Run).routeID ? "Change Route" : "Add Route"}
+                                                                                </button>
                                                                                 <Link to={`/feedbackcomment/${(item.data as Run).runID}`}>
-                                                                                    <button className="btn btn-sm btn-outline-light mt-2">View Feedback and Comments</button>
+                                                                                    <button className="btn btn-sm btn-outline-light mt-2">
+                                                                                        View Feedback and Comments
+                                                                                    </button>
                                                                                 </Link>
                                                                             </>
                                                                         ) : (
                                                                             <>
-                                                                                <p className="mb-1"><strong>Workout Type:</strong> {(item.data as Workout).type ?? "Not specified"}</p>
-                                                                                <p className="mb-1"><strong>Time:</strong> {(item.data as Workout).timeOfDay ?? "Not specified"}</p>
-                                                                                <p className="mb-1"><strong>Duration:</strong> {typeof (item.data as Workout).duration === "number" ? FormatDuration((item.data as Workout).duration!) : "Not specified"} min</p>
-                                                                                <p className="mb-1"><strong>Notes:</strong> {(item.data as Workout).notes ?? "Not specified"}</p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Workout Type:</strong> {(item.data as Workout).type ?? "Not specified"}
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Time:</strong> {(item.data as Workout).timeOfDay ?? "Not specified"}
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Duration:</strong>{" "}
+                                                                                    {typeof (item.data as Workout).duration === "number"
+                                                                                        ? FormatDuration((item.data as Workout).duration!)
+                                                                                        : "Not specified"}{" "}
+                                                                                    min
+                                                                                </p>
+                                                                                <p className="mb-1">
+                                                                                    <strong>Notes:</strong> {(item.data as Workout).notes ?? "Not specified"}
+                                                                                </p>
                                                                                 <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                                                                     <strong>Completed?</strong>
                                                                                     <input

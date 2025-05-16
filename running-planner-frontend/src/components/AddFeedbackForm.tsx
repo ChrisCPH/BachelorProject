@@ -142,7 +142,7 @@ export const AddFeedbackForm = ({ runId, onSubmit, onClose, initialData }: AddFe
             </div>
 
             <div className="form-group mb-3">
-                <label>Actual Pace</label>
+                <label>Actual Pace (optional)</label>
                 <input
                     type="text"
                     placeholder="e.g., 5:20"
@@ -157,7 +157,7 @@ export const AddFeedbackForm = ({ runId, onSubmit, onClose, initialData }: AddFe
             </div>
 
             <div className="form-group mb-3">
-                <label>Actual Duration</label>
+                <label>Actual Duration (optional)</label>
                 <input
                     type="text"
                     placeholder="e.g., 30:00"
@@ -172,7 +172,7 @@ export const AddFeedbackForm = ({ runId, onSubmit, onClose, initialData }: AddFe
             </div>
 
             <div className="form-group mb-3">
-                <label>Actual Distance</label>
+                <label>Actual Distance (optional)</label>
                 <input
                     type="number"
                     value={distance}
@@ -182,7 +182,7 @@ export const AddFeedbackForm = ({ runId, onSubmit, onClose, initialData }: AddFe
             </div>
 
             <div className="form-group mb-3">
-                <label>Comments</label>
+                <label>Comments (optional)</label>
                 <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
