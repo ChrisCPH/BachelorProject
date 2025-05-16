@@ -79,7 +79,7 @@ export const AddUserForm = ({ trainingPlanId, onSubmit, onClose }: AddUserFormPr
         setErrorMessage(null);
 
         try {
-            const url = `${API_BASE_URL}/user/addUserToTrainingPlan?userId=${userResult.userId}&trainingPlanId=${trainingPlanId}&permission=${permission}`;
+            const url = `${API_BASE_URL}/user/addUserToTrainingPlan?userId=${userResult.userId}&id=${trainingPlanId}&permission=${permission}`;
 
             const response = await fetch(url, {
                 method: "POST",

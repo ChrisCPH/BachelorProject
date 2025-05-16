@@ -425,6 +425,7 @@ export default function Calendar() {
                 body: JSON.stringify(selectedRouteId),
             });
 
+            if (await handleAuthError(response, setErrorMessage, "assigning route")) return;
             if (!response.ok) throw new Error("Failed to assign route");
 
             setRuns(prevRuns =>
@@ -598,6 +599,9 @@ export default function Calendar() {
                 <div className="modal show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog">
                         <div className="modal-content bg-dark text-white">
+                            <div>
+                                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                            </div>
                             <div className="modal-header">
                                 <h5 className="modal-title">Select a Route</h5>
                                 <button

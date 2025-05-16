@@ -4,6 +4,7 @@ import { RouteMap } from '../components/RouteMap';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { RunningRoute, GeoJsonLineString, Route } from '../types/RunningRoute';
+import { useSearchParams } from 'react-router-dom';
 
 function FlyToRoute({ coordinates }: { coordinates: [number, number][] }) {
     const map = useMap();
@@ -26,9 +27,11 @@ export default function RoutePlanner() {
     const [savedRoutes, setSavedRoutes] = useState<RunningRoute[]>([]);
     const [selectedRouteCoords, setSelectedRouteCoords] = useState<[number, number][]>([]);
     const [editingRoute, setEditingRoute] = useState<RunningRoute | null>(null);
+    const [searchParams] = useSearchParams();
+    const selectedRouteId = searchParams.get('routeId');
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    const fetchRoutes = async () => {
+    const fetchAndSelectRoute = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/runningroute/getAll`, {
                 headers: {
@@ -40,10 +43,24 @@ export default function RoutePlanner() {
 
             const data = await res.json();
             setSavedRoutes(data);
+
+            if (selectedRouteId) {
+                const match = data.find((r: RunningRoute) => r.id === selectedRouteId);
+                if (match) {
+                    setEditingRoute(match);
+                    setRouteName(match.name);
+                    setSelectedRouteCoords([]);
+                    setRoute(null);
+                }
+            }
         } catch (err: any) {
             setMessage(`Failed to fetch routes: ${err.message}`);
         }
-    }
+    };
+
+    useEffect(() => {
+        fetchAndSelectRoute();
+    }, [selectedRouteId]);
 
     const saveRunningRoute = async (route: Route) => {
         const geometry: GeoJsonLineString = {
@@ -77,7 +94,7 @@ export default function RoutePlanner() {
             setTimeout(() => setMessage(null), 4000);
             setRoute(null);
             setRouteName('');
-            fetchRoutes();
+            fetchAndSelectRoute();
         } catch (err: any) {
             setMessage(`Failed to save: ${err.message}`);
         } finally {
@@ -102,7 +119,7 @@ export default function RoutePlanner() {
             setMessage('Route deleted successfully!');
             setTimeout(() => setMessage(null), 4000);
             resetMapState();
-            fetchRoutes();
+            fetchAndSelectRoute();
         } catch (err: any) {
             setMessage(`Failed to delete route: ${err.message}`);
         }
@@ -150,10 +167,6 @@ export default function RoutePlanner() {
         setRoute(null);
         setRouteName('');
     };
-
-    useEffect(() => {
-        fetchRoutes();
-    }, []);
 
     return (
         <div style={{ height: '100vh', display: 'flex' }}>

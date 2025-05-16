@@ -311,6 +311,9 @@ export default function TrainingPlanDetails() {
         <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog">
                 <div className="modal-content bg-dark text-light">
+                    <div>
+                        {errorMessage && <div className="error-message">{errorMessage}</div>}
+                    </div>
                     <div className="modal-header">
                         <h5 className="modal-title">Select a Route</h5>
                         <button
@@ -609,7 +612,7 @@ export default function TrainingPlanDetails() {
                                                                                     <p className="mb-1">
                                                                                         <strong>Route: </strong>
                                                                                         <Link
-                                                                                            to={`/routeplanner`}
+                                                                                            to={`/routeplanner?routeId=${(item.data as Run).routeID}`}
                                                                                         >
                                                                                             {routeMap.get((item.data as Run).routeID!) || "Unknown Route"}
                                                                                         </Link>

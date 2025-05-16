@@ -27,7 +27,7 @@ function App() {
         <Route path="/exercises/:id" element={<WorkoutDetails />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/feedbackcomment/:id" element={<FeedbackCommentsDetails />} />
-        <Route path="/routeplanner" element={<RoutePlanner />} />
+        <Route path="/routeplanner/:routeId?" element={<RoutePlanner />} />
       </Route>
     </Routes>
   );

@@ -94,9 +94,10 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("addUserToTrainingPlan")]
-        public async Task<IActionResult> AddUserToTrainingPlan([FromQuery] int userId, [FromQuery] int trainingPlanId, [FromQuery] string permission)
+        [TrainingPlanPermissionAuthorize ("owner")] // id is training plan id but changed for the permissions
+        public async Task<IActionResult> AddUserToTrainingPlan([FromQuery] int userId, [FromQuery] int id, [FromQuery] string permission)
         {
-            var (success, message) = await _userService.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission);
+            var (success, message) = await _userService.AddUserToTrainingPlanAsync(userId, id, permission); 
 
             if (!success)
             {
