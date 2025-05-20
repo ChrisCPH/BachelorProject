@@ -82,11 +82,11 @@ As a runner I want to give feedback on a run so that I can reflect on the sessio
 
 Acceptance Criteria:
 
-1. When a workout or run is completed the runner should be prompted to give feedback.
+1. When a run is completed the runner should be prompted to give feedback.
 
 2. A runner should give a rating 1-10 on their effort and how the run felt.
 
-As a runner I watn to give access to my training plan so that I can share it with other users.
+As a runner I want to give access to my training plan so that I can share it with other users.
 
 Acceptance Criteria:
 
