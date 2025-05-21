@@ -9,10 +9,11 @@
 | Programming Language | C#, TypeScript |
 | Database | mssql, mongodb |
 | CI/CD | GitHub Actions |
-| Testing | XUnit |
 | Api | REST |
 | Project management | GitHub Projects |
 | Frontend Framework | React |
+| Testing | XUnit |
+| Api Testing | Postman |
 
 ## User Stories and Acceptance Criteria
 
