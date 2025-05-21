@@ -3,12 +3,14 @@ using RunningPlanner.Data;
 
 public abstract class TestBase
 {
-    protected RunningPlannerDbContext GetInMemoryDbContext()
+    protected RunningPlannerDbContext GetInMemoryDbContext(bool useUniqueName = true)
     {
         var options = new DbContextOptionsBuilder<RunningPlannerDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .UseInMemoryDatabase(databaseName: useUniqueName ? Guid.NewGuid().ToString() : "UnitTestDb")
             .Options;
 
-        return new RunningPlannerDbContext(options);
+        var context = new RunningPlannerDbContext(options);
+        context.Database.EnsureCreated();
+        return context;
     }
 }
