@@ -48,7 +48,7 @@
     **Acceptance Criteria:**
     1. To creata a workout the runner must specify the type of workout, week and day of the week.
     2. The runner should be able to make the workout repeat every week for a training plan with a checkbox.
-    3. When adding a workout the runner should be able to input duration and exercises.
+    3. When adding a workout the runner should be able to input duration.
 
 6. As a runner I want to be able to add my training plan to a calendar so that I know exactly when my runs and workouts are.
 

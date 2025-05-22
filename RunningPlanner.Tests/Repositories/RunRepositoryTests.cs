@@ -150,5 +150,48 @@ namespace RunningPlanner.Tests
             Assert.All(runs, run => Assert.NotNull(run.RouteID));
         }
 
+        [Fact]
+        public async Task AddRunsAsync_ShouldAddMultipleRuns()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new RunRepository(context);
+
+            var trainingPlan = new TrainingPlan { TrainingPlanID = 1, Name = "Marathon Plan" };
+            context.TrainingPlan.Add(trainingPlan);
+            await context.SaveChangesAsync();
+
+            var runsToAdd = new List<Run>
+            {
+                new Run { RunID = 1, Distance = 5.0, TrainingPlanID = trainingPlan.TrainingPlanID },
+                new Run { RunID = 2, Distance = 10.0, TrainingPlanID = trainingPlan.TrainingPlanID }
+            };
+
+            var result = await repo.AddRunsAsync(runsToAdd);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, context.Run.Count());
+            Assert.Contains(context.Run, r => r.Distance == 5.0);
+            Assert.Contains(context.Run, r => r.Distance == 10.0);
+
+            Assert.Equal(runsToAdd.Count, result.Count);
+            foreach (var run in runsToAdd)
+            {
+                Assert.Contains(result, r => r.RunID == run.RunID && r.Distance == run.Distance);
+            }
+        }
+
+        [Fact]
+        public async Task AddRunsAsync_ShouldReturnEmptyList_WhenRunsIsEmpty()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new RunRepository(context);
+            var emptyRuns = new List<Run>();
+
+            var result = await repo.AddRunsAsync(emptyRuns);
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            Assert.Equal(0, context.Run.Count());
+        }
     }
 }

@@ -9,7 +9,7 @@ import { ParseTimeToSeconds } from "../utils/ParseTimeToSeconds";
 interface AddRunFormProps {
     trainingPlanId: number;
     maxDuration: number;
-    onSubmit: (run: Run) => void;
+    onSubmit: (run: Run | Run[]) => void;  // Accept single run or array
     onClose: () => void;
     initialData?: Run;
 }
@@ -45,7 +45,6 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             setDuration(initialData.duration || 0);
         }
     }, [initialData]);
-
 
     const handleSubmit = async () => {
         if (!dayOfWeek && dayOfWeek !== 0) {
@@ -96,7 +95,12 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             }
 
             const result = await response.json();
-            onSubmit(result);
+
+            if (repeat && Array.isArray(result)) {
+                onSubmit(result);
+            } else {
+                onSubmit(result);
+            }
         } catch (error) {
             console.error(error);
             setErrorMessage("An unexpected error occurred.");
@@ -113,17 +117,19 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
                 <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
             </div>
 
-            <div className="form-group mb-3">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={repeat}
-                        onChange={(e) => setRepeat(e.target.checked)}
-                        className="me-2"
-                    />
-                    Repeat every week
-                </label>
-            </div>
+            {!initialData && (
+                <div className="form-group mb-3">
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={repeat}
+                            onChange={(e) => setRepeat(e.target.checked)}
+                            className="me-2"
+                        />
+                        Repeat every week
+                    </label>
+                </div>
+            )}
 
             {!repeat && (
                 <div className="form-group mb-3">

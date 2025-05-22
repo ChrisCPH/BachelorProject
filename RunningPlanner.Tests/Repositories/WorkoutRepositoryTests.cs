@@ -139,5 +139,49 @@ namespace RunningPlanner.Tests
 
             Assert.False(result);
         }
+
+        [Fact]
+        public async Task AddWorkoutsAsync_ShouldAddMultipleWorkouts()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new WorkoutRepository(context);
+
+            var trainingPlan = new TrainingPlan { TrainingPlanID = 1, Name = "Marathon Plan" };
+            context.TrainingPlan.Add(trainingPlan);
+            await context.SaveChangesAsync();
+
+            var workoutsToAdd = new List<Workout>
+            {
+                new Workout { WorkoutID = 1, Type = "Strength", TrainingPlanID = trainingPlan.TrainingPlanID },
+                new Workout { WorkoutID = 2, Type = "Strength", TrainingPlanID = trainingPlan.TrainingPlanID }
+            };
+
+            var result = await repo.AddWorkoutsAsync(workoutsToAdd);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, context.Workout.Count());
+            Assert.Contains(context.Workout, w => w.Type == "Strength");
+            Assert.Contains(context.Workout, w => w.Type == "Strength");
+
+            Assert.Equal(workoutsToAdd.Count, result.Count);
+            foreach (var workout in workoutsToAdd)
+            {
+               Assert.Contains(result, w => w.WorkoutID == workout.WorkoutID && w.Type == workout.Type);
+            }
+        }
+
+        [Fact]
+        public async Task AddWorkoutsAsync_ShouldReturnEmptyList_WhenWorkoutsIsEmpty()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new WorkoutRepository(context);
+            var emptyWorkouts = new List<Workout>();
+
+            var result = await repo.AddWorkoutsAsync(emptyWorkouts);
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            Assert.Equal(0, context.Workout.Count());
+        }
     }
 }

@@ -42,7 +42,6 @@ namespace RunningPlanner.Tests
             return created!.TrainingPlanID;
         }
 
-
         // Test for user story 1 (registration user story)
         [Fact]
         public async Task Register_WithValidData_ReturnsCreated()
@@ -355,7 +354,76 @@ namespace RunningPlanner.Tests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
+        // Test for user story 5 (create workout user story)
+        [Fact]
+        public async Task CreateWorkout_WithValidData_ReturnsCreated()
+        {
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
 
+            var workout = new
+            {
+                TrainingPlanID = trainingPlanId,
+                Type = "Strength",
+                WeekNumber = 2,
+                DayOfWeek = (DayOfWeek)3,
+            };
+
+            var response = await _client.PostAsJsonAsync("api/workout/add", workout);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            var created = await response.Content.ReadFromJsonAsync<Workout>();
+            Assert.NotNull(created);
+            Assert.Equal(2, created.WeekNumber);
+            Assert.Equal((DayOfWeek)3, created.DayOfWeek);
+        }
+
+        // Test for user story 5 (create workout user story)
+        [Fact]
+        public async Task CreateWorkout_WithoutDay_ReturnsBadRequest()
+        {
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var workout = new
+            {
+                TrainingPlanID = trainingPlanId,
+                WeekNumber = 3,
+            };
+
+            var response = await _client.PostAsJsonAsync("api/workout/add", workout);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        // Test for user story 5 (create workout user story)
+        [Fact]
+        public async Task CreateWorkout_WithoutWeek_ReturnsBadRequest()
+        {
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var workout = new
+            {
+                TrainingPlanID = trainingPlanId,
+                DayOfWeek = (DayOfWeek)3,
+            };
+
+            var response = await _client.PostAsJsonAsync("api/workout/add", workout);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        // Test for user story 5 (create workout user story)
+        [Fact]
+        public async Task CreateWorkout_NullBody_ReturnsBadRequest()
+        {
+            await AuthorizeClientAsync();
+
+            var content = new StringContent("", Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("api/workout/add", content);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
 
 
     }

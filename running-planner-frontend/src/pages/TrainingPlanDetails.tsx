@@ -410,25 +410,30 @@ export default function TrainingPlanDetails() {
                         trainingPlanId={parseInt(id!)}
                         maxDuration={planDuration ?? 0}
                         onClose={() => { setShowAddRun(false) }}
-                        onSubmit={(newRun) => {
+                        onSubmit={(newRuns) => {
                             setShowAddRun(false);
+
                             setSchedule((prev) => {
                                 const updated = { ...prev };
-                                if (!updated[newRun.weekNumber]) updated[newRun.weekNumber] = {};
-                                if (!updated[newRun.weekNumber][newRun.dayOfWeek]) updated[newRun.weekNumber][newRun.dayOfWeek] = [];
 
-                                const exists = updated[newRun.weekNumber][newRun.dayOfWeek].some(
-                                    (item) => item.type === "run" && (item.data as Run).runID === newRun.runID
-                                );
+                                const runsArray = Array.isArray(newRuns) ? newRuns : [newRuns];
 
-                                if (!exists) {
-                                    updated[newRun.weekNumber][newRun.dayOfWeek].push({ type: "run", data: newRun });
-                                }
+                                runsArray.forEach((run) => {
+                                    if (!updated[run.weekNumber]) updated[run.weekNumber] = {};
+                                    if (!updated[run.weekNumber][run.dayOfWeek]) updated[run.weekNumber][run.dayOfWeek] = [];
+
+                                    const exists = updated[run.weekNumber][run.dayOfWeek].some(
+                                        (item) => item.type === "run" && (item.data as Run).runID === run.runID
+                                    );
+
+                                    if (!exists) {
+                                        updated[run.weekNumber][run.dayOfWeek].push({ type: "run", data: run });
+                                    }
+                                });
 
                                 return updated;
                             });
                         }}
-
                     />
                 </div>
             )}
@@ -442,17 +447,25 @@ export default function TrainingPlanDetails() {
                         onClose={() => setShowAddWorkout(false)}
                         onSubmit={(newWorkout) => {
                             setShowAddWorkout(false);
+
                             setSchedule((prev) => {
                                 const updated = { ...prev };
-                                if (!updated[newWorkout.weekNumber]) updated[newWorkout.weekNumber] = {};
-                                if (!updated[newWorkout.weekNumber][newWorkout.dayOfWeek]) updated[newWorkout.weekNumber][newWorkout.dayOfWeek] = [];
-                                const exists = updated[newWorkout.weekNumber][newWorkout.dayOfWeek].some(
-                                    (item) => item.type === "workout" && (item.data as Workout).workoutID === newWorkout.workoutID
-                                );
 
-                                if (!exists) {
-                                    updated[newWorkout.weekNumber][newWorkout.dayOfWeek].push({ type: "workout", data: newWorkout });
-                                }
+                                const workoutsArray = Array.isArray(newWorkout) ? newWorkout : [newWorkout];
+
+                                workoutsArray.forEach((newWorkout) => {
+                                    if (!updated[newWorkout.weekNumber]) updated[newWorkout.weekNumber] = {};
+                                    if (!updated[newWorkout.weekNumber][newWorkout.dayOfWeek]) updated[newWorkout.weekNumber][newWorkout.dayOfWeek] = [];
+
+                                    const exists = updated[newWorkout.weekNumber][newWorkout.dayOfWeek].some(
+                                        (item) => item.type === "workout" && (item.data as Workout).workoutID === newWorkout.workoutID
+                                    );
+
+                                    if (!exists) {
+                                        updated[newWorkout.weekNumber][newWorkout.dayOfWeek].push({ type: "workout", data: newWorkout });
+                                    }
+                                });
+
                                 return updated;
                             });
                         }}
@@ -496,7 +509,13 @@ export default function TrainingPlanDetails() {
                         maxDuration={planDuration ?? 0}
                         initialData={editRun}
                         onClose={() => setEditRun(null)}
-                        onSubmit={handleEditRunSubmit}
+                        onSubmit={(runOrRuns) => {
+                            if (Array.isArray(runOrRuns)) {
+                                handleEditRunSubmit(runOrRuns[0]);
+                            } else {
+                                handleEditRunSubmit(runOrRuns);
+                            }
+                        }}
                     />
                 </div>
             )}
@@ -509,7 +528,13 @@ export default function TrainingPlanDetails() {
                         maxDuration={planDuration ?? 0}
                         initialData={editWorkout}
                         onClose={() => setEditWorkout(null)}
-                        onSubmit={handleEditWorkoutSubmit}
+                        onSubmit={(workoutOrWorkouts) => {
+                            if (Array.isArray(workoutOrWorkouts)) {
+                                handleEditWorkoutSubmit(workoutOrWorkouts[0]);
+                            } else {
+                                handleEditWorkoutSubmit(workoutOrWorkouts);
+                            }
+                        }}
                     />
                 </div>
             )}

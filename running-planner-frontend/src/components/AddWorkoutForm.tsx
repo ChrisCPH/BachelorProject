@@ -8,7 +8,7 @@ import { ParseTimeToSeconds } from "../utils/ParseTimeToSeconds";
 interface AddWorkoutFormProps {
     trainingPlanId: number;
     maxDuration: number;
-    onSubmit: (workout: Workout) => void;
+    onSubmit: (workout: Workout | Workout[]) => void;
     onClose: () => void;
     initialData?: Workout;
 }
@@ -86,7 +86,12 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
             }
 
             const result = await response.json();
-            onSubmit(result);
+
+            if (repeat && Array.isArray(result)) {
+                onSubmit(result);
+            } else {
+                onSubmit(result);
+            }
         } catch (error) {
             console.error(error);
             setErrorMessage("An unexpected error occurred.");
@@ -103,17 +108,19 @@ export const AddWorkoutForm = ({ trainingPlanId, maxDuration, onSubmit, onClose,
                 <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
             </div>
 
-            <div className="form-group mb-3">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={repeat}
-                        onChange={(e) => setRepeat(e.target.checked)}
-                        className="me-2"
-                    />
-                    Repeat every week
-                </label>
-            </div>
+            {!initialData && (
+                <div className="form-group mb-3">
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={repeat}
+                            onChange={(e) => setRepeat(e.target.checked)}
+                            className="me-2"
+                        />
+                        Repeat every week
+                    </label>
+                </div>
+            )}
 
             {!repeat && (
                 <div className="form-group mb-3">
