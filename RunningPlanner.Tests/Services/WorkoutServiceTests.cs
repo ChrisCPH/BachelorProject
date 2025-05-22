@@ -7,19 +7,21 @@ namespace RunningPlanner.Tests.Services
 {
     public class WorkoutServiceTests
     {
+        private readonly Mock<ITrainingPlanRepository> _trainingPlanRepositoryMock;
         private readonly Mock<IWorkoutRepository> _workoutRepositoryMock;
         private readonly WorkoutService _workoutService;
 
         public WorkoutServiceTests()
         {
+            _trainingPlanRepositoryMock = new Mock<ITrainingPlanRepository>();
             _workoutRepositoryMock = new Mock<IWorkoutRepository>();
-            _workoutService = new WorkoutService(_workoutRepositoryMock.Object);
+            _workoutService = new WorkoutService(_workoutRepositoryMock.Object, _trainingPlanRepositoryMock.Object);
         }
 
         [Fact]
         public async Task CreateWorkoutAsync_ShouldReturnCreatedWorkout_WhenWorkoutIsValid()
         {
-            var workout = new Workout { WorkoutID = 1 };
+            var workout = new Workout { WorkoutID = 1, DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
             _workoutRepositoryMock.Setup(repo => repo.AddWorkoutAsync(workout)).ReturnsAsync(workout);
 
             var result = await _workoutService.CreateWorkoutAsync(workout);

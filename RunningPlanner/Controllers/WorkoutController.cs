@@ -18,7 +18,7 @@ namespace RunningPlanner.Controllers
         }
 
         [HttpPost("add")]
-        [TrainingPlanPermissionAuthorize ("editor", "owner")]
+        [TrainingPlanPermissionAuthorize("editor", "owner")]
         public async Task<IActionResult> CreateWorkout([FromBody] Workout workout)
         {
             if (workout == null)
@@ -26,8 +26,38 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Workout data is required.");
             }
 
+            if (workout.DayOfWeek == null || workout.Type == "" || workout.WeekNumber == 0)
+            {
+                return BadRequest("Day of week, type, and week number are required.");
+            }
+
             var createdWorkout = await _workoutService.CreateWorkoutAsync(workout);
             return CreatedAtAction(nameof(GetWorkoutById), new { id = createdWorkout.WorkoutID }, createdWorkout);
+        }
+
+        [HttpPost("add/repeat")]
+        [TrainingPlanPermissionAuthorize("editor", "owner")]
+        public async Task<IActionResult> CreateRepeatedWorkout([FromBody] Workout workout)
+        {
+            if (workout == null)
+            {
+                return BadRequest("Workout data is required.");
+            }
+
+            if (workout.DayOfWeek == null || workout.Type == "")
+            {
+                return BadRequest("Day of week and week number are required.");
+            }
+
+            try
+            {
+                var createdWorkouts = await _workoutService.CreateRepeatedWorkoutAsync(workout);
+                return CreatedAtAction(nameof(GetWorkoutById), new { id = createdWorkouts.First().WorkoutID }, createdWorkouts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]

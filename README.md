@@ -39,7 +39,7 @@
 4. As a runner I want to add runs to my training plan so that I can train effectively.
 
     **Acceptance Criteria:**
-    1. To create a run the runner must specify a week, a day of the week and either a distance or a duration.
+    1. To create a run the runner must specify a week and a day of the week.
     2. The runner should be able to make the run repeat every week for a training plan with a checkbox.
     3. When adding a run the runner should be able to input distance, duration and pace.
 

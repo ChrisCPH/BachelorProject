@@ -20,7 +20,7 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task CreateWorkout_ReturnsCreatedAtActionResult_WhenWorkoutIsValid()
         {
-            var workout = new Workout { WorkoutID = 1 };
+            var workout = new Workout { WorkoutID = 1, Type = "strength", DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
             _workoutServiceMock.Setup(s => s.CreateWorkoutAsync(workout)).ReturnsAsync(workout);
 
             var result = await _controller.CreateWorkout(workout);
@@ -165,6 +165,63 @@ namespace RunningPlanner.Tests.Controllers
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Workout not found.", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedWorkout_ShouldReturnCreatedAtAction_WhenWorkoutIsValid()
+        {
+            var workout = new Workout { WorkoutID = 1, Type = "Strength", DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
+            var createdWorkouts = new List<Workout> { workout };
+            _workoutServiceMock.Setup(s => s.CreateRepeatedWorkoutAsync(workout)).ReturnsAsync(createdWorkouts);
+
+            var result = await _controller.CreateRepeatedWorkout(workout);
+
+            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(nameof(_controller.GetWorkoutById), createdAtActionResult.ActionName);
+
+            var value = Assert.IsAssignableFrom<IEnumerable<Workout>>(createdAtActionResult.Value);
+            Assert.Single(value);
+            Assert.Equal(workout.WorkoutID, value.First().WorkoutID);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedWorkout_ShouldReturnBadRequest_WhenWorkoutIsNull()
+        {
+            var result = await _controller.CreateRepeatedWorkout(null!);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Workout data is required.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedWorkout_ShouldReturnBadRequest_WhenDayOfWeekIsNull()
+        {
+            var workout = new Workout { WorkoutID = 1, Type = "Strength", DayOfWeek = null, WeekNumber = 1 };
+
+            var result = await _controller.CreateRepeatedWorkout(workout);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Day of week and week number are required.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedWorkout_ShouldReturnStatusCode500_WhenExceptionThrown()
+        {
+            var workout = new Workout { WorkoutID = 1, Type = "Strength", DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
+            _workoutServiceMock.Setup(s => s.CreateRepeatedWorkoutAsync(workout)).ThrowsAsync(new Exception("Something went wrong"));
+
+            var result = await _controller.CreateRepeatedWorkout(workout);
+
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, objectResult.StatusCode);
+
+            var value = objectResult.Value;
+
+            var messageProperty = value!.GetType().GetProperty("message");
+            Assert.NotNull(messageProperty);
+
+            var messageValue = messageProperty.GetValue(value) as string;
+            Assert.Equal("Something went wrong", messageValue);
         }
     }
 }

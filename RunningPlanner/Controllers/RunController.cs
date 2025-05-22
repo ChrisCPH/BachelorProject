@@ -26,8 +26,38 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Run data is required.");
             }
 
+            if (run.DayOfWeek == null || run.WeekNumber == 0)
+            {
+                return BadRequest("Day of week and week number are required.");
+            }
+
             var createdRun = await _runService.CreateRunAsync(run);
             return CreatedAtAction(nameof(GetRunById), new { id = createdRun.RunID }, createdRun);
+        }
+
+        [HttpPost("add/repeat")]
+        [TrainingPlanPermissionAuthorize("editor", "owner")]
+        public async Task<IActionResult> CreateRepeatedRun([FromBody] Run run)
+        {
+            if (run == null)
+            {
+                return BadRequest("Run data is required.");
+            }
+
+            if (run.DayOfWeek == null)
+            {
+                return BadRequest("Invalid day of week.");
+            }
+
+            try
+            {
+                var createdRuns = await _runService.CreateRepeatedRunAsync(run);
+                return CreatedAtAction(nameof(GetRunById), new { id = createdRuns.First().RunID }, createdRuns);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]

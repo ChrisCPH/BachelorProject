@@ -28,6 +28,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
     const [durationInput, setDurationInput] = useState(""); // string like "30:00"
     const [duration, setDuration] = useState(0); // actual seconds
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [repeat, setRepeat] = useState(false);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
@@ -45,9 +46,14 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
         }
     }, [initialData]);
 
+
     const handleSubmit = async () => {
-        if (!weekNumber || dayOfWeek === null) {
-            setErrorMessage("Week number and day of week are required.");
+        if (!dayOfWeek && dayOfWeek !== 0) {
+            setErrorMessage("Day of week is required.");
+            return;
+        }
+        if (!repeat && (!weekNumber || weekNumber < 1)) {
+            setErrorMessage("Week number is required if not repeating.");
             return;
         }
 
@@ -67,11 +73,13 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
         };
 
         try {
-            const url = initialData
-                ? `${API_BASE_URL}/run/update`
-                : `${API_BASE_URL}/run/add`;
+            const url = repeat
+                ? `${API_BASE_URL}/run/add/repeat`
+                : initialData
+                    ? `${API_BASE_URL}/run/update`
+                    : `${API_BASE_URL}/run/add`;
 
-            const method = initialData ? "PUT" : "POST";
+            const method = repeat ? "POST" : initialData ? "PUT" : "POST";
 
             const response = await fetch(url, {
                 method: method,
@@ -91,6 +99,7 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             onSubmit(result);
         } catch (error) {
             console.error(error);
+            setErrorMessage("An unexpected error occurred.");
         }
     };
 
@@ -105,19 +114,33 @@ export const AddRunForm = ({ trainingPlanId, maxDuration, onSubmit, onClose, ini
             </div>
 
             <div className="form-group mb-3">
-                <label>Week Number</label>
-                <select
-                    value={weekNumber}
-                    onChange={(e) => setWeekNumber(Number(e.target.value))}
-                    className="form-control bg-secondary text-white border-0 rounded-2"
-                >
-                    {Array.from({ length: maxDuration }, (_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                            Week {i + 1}
-                        </option>
-                    ))}
-                </select>
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={repeat}
+                        onChange={(e) => setRepeat(e.target.checked)}
+                        className="me-2"
+                    />
+                    Repeat every week
+                </label>
             </div>
+
+            {!repeat && (
+                <div className="form-group mb-3">
+                    <label>Week Number</label>
+                    <select
+                        value={weekNumber}
+                        onChange={(e) => setWeekNumber(Number(e.target.value))}
+                        className="form-control bg-secondary text-white border-0 rounded-2"
+                    >
+                        {Array.from({ length: maxDuration }, (_, i) => (
+                            <option key={i + 1} value={i + 1}>
+                                Week {i + 1}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="form-group mb-3">
                 <label>Day of Week</label>

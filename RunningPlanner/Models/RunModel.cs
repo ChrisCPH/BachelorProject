@@ -15,7 +15,7 @@ namespace RunningPlanner.Models
 
         public int WeekNumber { get; set; } // Week number in the training plan
 
-        public DayOfWeek DayOfWeek { get; set; } // Day of the week for the workout. Sunday = 0, Monday = 1, ..., Saturday = 6
+        public DayOfWeek? DayOfWeek { get; set; } // Day of the week for the workout. Sunday = 0, Monday = 1, ..., Saturday = 6
 
         public TimeSpan? TimeOfDay { get; set; } // Time of day for the workout. hh:mm:ss format
 

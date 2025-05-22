@@ -25,6 +25,11 @@ namespace RunningPlanner.Controllers
                 return BadRequest("Training plan data is required.");
             }
 
+            if (trainingPlan.Name == "")
+            {
+                return BadRequest("Training plan name is required.");
+            }
+
             var userIdClaim = User.FindFirst("UserID");
             if (userIdClaim == null)
             {

@@ -24,7 +24,7 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task CreateRun_ShouldReturnCreatedAtAction_WhenRunIsValid()
         {
-            var run = new Run { RunID = 1 };
+            var run = new Run { RunID = 1, DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
             _runServiceMock.Setup(s => s.CreateRunAsync(run)).ReturnsAsync(run);
 
             var result = await _runController.CreateRun(run);
@@ -191,6 +191,63 @@ namespace RunningPlanner.Tests.Controllers
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Run not found.", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedRun_ShouldReturnCreatedAtAction_WhenRunIsValid()
+        {
+            var run = new Run { RunID = 1, DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
+            var createdRuns = new List<Run> { run };
+            _runServiceMock.Setup(s => s.CreateRepeatedRunAsync(run)).ReturnsAsync(createdRuns);
+
+            var result = await _runController.CreateRepeatedRun(run);
+
+            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(nameof(_runController.GetRunById), createdAtActionResult.ActionName);
+
+            var value = Assert.IsAssignableFrom<IEnumerable<Run>>(createdAtActionResult.Value);
+            Assert.Single(value);
+            Assert.Equal(run.RunID, value.First().RunID);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedRun_ShouldReturnBadRequest_WhenRunIsNull()
+        {
+            var result = await _runController.CreateRepeatedRun(null!);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Run data is required.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedRun_ShouldReturnBadRequest_WhenDayOfWeekIsNull()
+        {
+            var run = new Run { RunID = 1, DayOfWeek = null, WeekNumber = 1 };
+
+            var result = await _runController.CreateRepeatedRun(run);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Invalid day of week.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateRepeatedRun_ShouldReturnStatusCode500_WhenExceptionThrown()
+        {
+            var run = new Run { RunID = 1, DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
+            _runServiceMock.Setup(s => s.CreateRepeatedRunAsync(run)).ThrowsAsync(new Exception("Something went wrong"));
+
+            var result = await _runController.CreateRepeatedRun(run);
+
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, objectResult.StatusCode);
+
+            var value = objectResult.Value;
+
+            var messageProperty = value!.GetType().GetProperty("message");
+            Assert.NotNull(messageProperty);
+
+            var messageValue = messageProperty.GetValue(value) as string;
+            Assert.Equal("Something went wrong", messageValue);
         }
     }
 }

@@ -7,6 +7,7 @@ namespace RunningPlanner.Repositories
     public interface IWorkoutRepository
     {
         Task<Workout> AddWorkoutAsync(Workout workout);
+        Task<List<Workout>> AddWorkoutsAsync(List<Workout> workouts);
         Task<Workout?> GetWorkoutByIdAsync(int workoutId);
         Task<List<Workout>?> GetAllWorkoutsByTrainingPlanAsync(int trainingPlanId);
         Task<Workout> UpdateWorkoutAsync(Workout workout);
@@ -27,6 +28,13 @@ namespace RunningPlanner.Repositories
             await _context.Workout.AddAsync(workout);
             await _context.SaveChangesAsync();
             return workout;
+        }
+
+        public async Task<List<Workout>> AddWorkoutsAsync(List<Workout> workouts)
+        {
+            await _context.Workout.AddRangeAsync(workouts);
+            await _context.SaveChangesAsync();
+            return workouts;
         }
 
         public async Task<Workout?> GetWorkoutByIdAsync(int workoutId)

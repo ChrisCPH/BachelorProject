@@ -8,18 +8,20 @@ namespace RunningPlanner.Tests.Services
     public class RunServiceTests
     {
         private readonly Mock<IRunRepository> _runRepositoryMock;
+        private readonly Mock<ITrainingPlanRepository> _trainingPlanRepositoryMock;
         private readonly RunService _runService;
 
         public RunServiceTests()
         {
+            _trainingPlanRepositoryMock = new Mock<ITrainingPlanRepository>();
             _runRepositoryMock = new Mock<IRunRepository>();
-            _runService = new RunService(_runRepositoryMock.Object);
+            _runService = new RunService(_runRepositoryMock.Object, _trainingPlanRepositoryMock.Object);
         }
 
         [Fact]
         public async Task CreateRunAsync_ShouldReturnCreatedRun_WhenRunIsValid()
         {
-            var run = new Run { RunID = 1 };
+            var run = new Run { RunID = 1, DayOfWeek = (DayOfWeek)1, WeekNumber = 1 };
             _runRepositoryMock.Setup(repo => repo.AddRunAsync(run)).ReturnsAsync(run);
 
             var result = await _runService.CreateRunAsync(run);

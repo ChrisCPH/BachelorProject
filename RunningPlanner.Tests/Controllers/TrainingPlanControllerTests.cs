@@ -22,7 +22,7 @@ namespace RunningPlanner.Tests.Controllers
         [Fact]
         public async Task CreateTrainingPlan_ShouldReturnCreatedAtAction_WhenTrainingPlanIsValid()
         {
-            var trainingPlan = new TrainingPlan { TrainingPlanID = 1 };
+            var trainingPlan = new TrainingPlan { Name = "Marathon plan", TrainingPlanID = 1 };
             int userId = 1;
 
             _trainingPlanServiceMock

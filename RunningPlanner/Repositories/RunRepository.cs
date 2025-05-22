@@ -7,6 +7,7 @@ namespace RunningPlanner.Repositories
     public interface IRunRepository
     {
         Task<Run> AddRunAsync(Run run);
+        Task<List<Run>> AddRunsAsync(List<Run> runs);
         Task<Run?> GetRunByIdAsync(int runId);
         Task<List<Run>?> GetAllRunsByTrainingPlanAsync(int trainingPlanId);
         Task<Run> UpdateRunAsync(Run run);
@@ -28,6 +29,13 @@ namespace RunningPlanner.Repositories
             await _context.Run.AddAsync(run);
             await _context.SaveChangesAsync();
             return run;
+        }
+
+        public async Task<List<Run>> AddRunsAsync(List<Run> runs)
+        {
+            await _context.Run.AddRangeAsync(runs);
+            await _context.SaveChangesAsync();
+            return runs;
         }
 
         public async Task<Run?> GetRunByIdAsync(int runId)

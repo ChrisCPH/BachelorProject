@@ -6,6 +6,7 @@ namespace RunningPlanner.Services
     public interface IRunService
     {
         Task<Run> CreateRunAsync(Run run);
+        Task<List<Run>> CreateRepeatedRunAsync(Run run);
         Task<Run?> GetRunByIdAsync(int runId);
         Task<List<Run>?> GetAllRunsByTrainingPlanAsync(int trainingPlanId);
         Task<Run> UpdateRunAsync(Run run);
@@ -15,9 +16,11 @@ namespace RunningPlanner.Services
     public class RunService : IRunService
     {
         private readonly IRunRepository _runRepository;
+        private readonly ITrainingPlanRepository _trainingPlanRepository;
 
-        public RunService(IRunRepository runRepository)
+        public RunService(IRunRepository runRepository, ITrainingPlanRepository trainingPlanRepository)
         {
+            _trainingPlanRepository = trainingPlanRepository;
             _runRepository = runRepository;
         }
 
@@ -29,6 +32,43 @@ namespace RunningPlanner.Services
             }
 
             return await _runRepository.AddRunAsync(run);
+        }
+
+        public async Task<List<Run>> CreateRepeatedRunAsync(Run run)
+        {
+            if (run == null)
+                throw new ArgumentNullException(nameof(run));
+
+            var trainingPlan = await _trainingPlanRepository.GetTrainingPlanByIdAsync(run.TrainingPlanID);
+
+            if (trainingPlan == null)
+                throw new ArgumentException("Training plan not found");
+
+            var runsToCreate = new List<Run>();
+
+            for (int week = 1; week <= trainingPlan.Duration; week++)
+            {
+                var runForWeek = new Run
+                {
+                    TrainingPlanID = run.TrainingPlanID,
+                    Type = run.Type,
+                    WeekNumber = week,
+                    DayOfWeek = run.DayOfWeek,
+                    TimeOfDay = run.TimeOfDay,
+                    Distance = run.Distance,
+                    Duration = run.Duration,
+                    Pace = run.Pace,
+                    Notes = run.Notes,
+                    Completed = run.Completed,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                runsToCreate.Add(runForWeek);
+            }
+
+            var createdRuns = await _runRepository.AddRunsAsync(runsToCreate);
+
+            return createdRuns;
         }
 
         public async Task<Run?> GetRunByIdAsync(int runId)
