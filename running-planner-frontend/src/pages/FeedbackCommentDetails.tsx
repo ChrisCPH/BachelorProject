@@ -317,6 +317,7 @@ export default function FeedbackCommentsDetails() {
                                                     <p><strong>User:</strong> {usernames[comment.userID!] ?? "Loading..."}</p>
                                                 </div>
                                                 <p><strong>Comment: </strong> {comment.text ?? "Not specified"}</p>
+                                                <p><strong></strong> {new Date(comment.createdAt).toLocaleString()}</p>
                                             </div>
                                             <div className="d-flex flex-column align-items-center">
                                                 <button
