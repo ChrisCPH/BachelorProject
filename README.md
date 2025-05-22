@@ -1,5 +1,7 @@
 ## Introduction
 
+This project was developed as part of my bachelor project in Software Development at Copenhagen Business Academy. It is a running planner application that enables runners to design personalized and detailed training plans.
+
 ## Technology Stack
 
 | Layer | Tools |
