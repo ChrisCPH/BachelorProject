@@ -48,7 +48,7 @@ This project was developed as part of my bachelor project in Software Developmen
 5. As a runner I want to add workouts to my training plan so that I can train effectively.
 
     **Acceptance Criteria:**
-    1. To creata a workout the runner must specify the type of workout, week and day of the week.
+    1. To create a workout the runner must specify the type of workout, week and day of the week.
     2. The runner should be able to make the workout repeat every week for a training plan with a checkbox.
     3. When adding a workout the runner should be able to input duration.
 

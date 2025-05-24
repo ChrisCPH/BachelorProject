@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Headers;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace RunningPlanner.Tests
 {
@@ -425,7 +426,221 @@ namespace RunningPlanner.Tests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
+        // Test for user story 8 (create running route user story)
+        [Fact]
+        public async Task CreateRunningRoute_WithValidData_ReturnsCreated()
+        {
+            await AuthorizeClientAsync();
 
+            var route = new
+            {
+                ID = "",
+                Name = "Morning Run",
+                Geometry = new
+                {
+                    Type = "LineString",
+                    Coordinates = new List<List<double>>
+            {
+                new() { 12.4924, 41.8902 },
+                new() { 12.4964, 41.9028 }
+            }
+                },
+                CreatedAt = DateTime.UtcNow,
+                DistanceKm = 5.2
+            };
+
+            var response = await _client.PostAsJsonAsync("api/runningroute/add", route);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            var created = await response.Content.ReadFromJsonAsync<RunningRoute>();
+            Assert.NotNull(created);
+            Assert.Equal("Morning Run", created.Name);
+            Assert.Equal("LineString", created.Geometry.Type);
+            Assert.Equal(2, created.Geometry.Coordinates.Count);
+            Assert.Equal(5.2, created.DistanceKm);
+        }
+
+        public int ExtractUserIdFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "UserID");
+            if (userIdClaim == null)
+                throw new InvalidOperationException("UserID claim not found in token");
+
+            return int.Parse(userIdClaim.Value);
+        }
+
+        // Test for user story 9 (add user to training plan user story)
+        [Fact]
+        public async Task AddUserToTrainingPlan_WithValidData_ReturnsOk()
+        {
+            await AuthorizeClientAsync();
+
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var otherUser = new { Email = "viewer@example.com", Password = "Viewer123!", UserName = "viewer" };
+            await _client.PostAsJsonAsync("api/user/register", otherUser);
+
+            var loginResponse = await _client.PostAsJsonAsync("api/user/login", new { otherUser.Email, otherUser.Password });
+            var loginContent = await loginResponse.Content.ReadFromJsonAsync<LoginSuccessResponse>();
+
+            var otherUserId = ExtractUserIdFromToken(loginContent!.Token);
+
+            var response = await _client.PostAsync(
+                $"api/user/addUserToTrainingPlan?userId={otherUserId}&id={trainingPlanId}&permission=editor",
+                null);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Contains("added", message.ToLower());
+        }
+
+        // Test for user story 9 (add user to training plan user story)
+        [Fact]
+        public async Task AddUserToTrainingPlan_WithInvalidPermission_ReturnsBadRequest()
+        {
+            await AuthorizeClientAsync();
+
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var otherUser = new { Email = "invalidperm@example.com", Password = "Password123!", UserName = "invalidperm" };
+            await _client.PostAsJsonAsync("api/user/register", otherUser);
+
+            var loginResponse = await _client.PostAsJsonAsync("api/user/login", new { otherUser.Email, otherUser.Password });
+            var loginContent = await loginResponse.Content.ReadFromJsonAsync<LoginSuccessResponse>();
+            var otherUserId = ExtractUserIdFromToken(loginContent!.Token);
+
+            var invalidPermission = "superadmin";
+
+            var response = await _client.PostAsync(
+                $"api/user/addUserToTrainingPlan?userId={otherUserId}&id={trainingPlanId}&permission={invalidPermission}",
+                null);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Contains("invalid permission", message.ToLower());
+        }
+
+        // Test for user story 9 (add user to training plan user story)
+        [Fact]
+        public async Task AddUserToTrainingPlan_WithNonExistentUser_ReturnsBadRequest()
+        {
+            await AuthorizeClientAsync();
+
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var nonExistentUserId = 99999;
+
+            var response = await _client.PostAsync(
+                $"api/user/addUserToTrainingPlan?userId={nonExistentUserId}&id={trainingPlanId}&permission=viewer",
+                null);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Contains("user or training plan not found.", message.ToLower());
+        }
+
+        // Test for user story 10 (create comment user story)
+        [Fact]
+        public async Task CreateCommentOnWorkout_WithValidRunId_ReturnsCreated()
+        {
+            await AuthorizeClientAsync();
+
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var workout = new
+            {
+                TrainingPlanID = trainingPlanId,
+                Type = "Strength",
+                WeekNumber = 2,
+                DayOfWeek = (DayOfWeek)3,
+            };
+
+            var workoutResponse = await _client.PostAsJsonAsync("api/workout/add", workout);
+            workoutResponse.EnsureSuccessStatusCode();
+            var createdWorkout = await workoutResponse.Content.ReadFromJsonAsync<Workout>();
+
+            var comment = new
+            {
+                createdWorkout!.WorkoutID,
+                Text = "Great job on this workout!",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var commentResponse = await _client.PostAsJsonAsync("api/comment/add", comment);
+
+            Assert.Equal(HttpStatusCode.Created, commentResponse.StatusCode);
+
+            var createdComment = await commentResponse.Content.ReadFromJsonAsync<Comment>();
+            Assert.NotNull(createdComment);
+            Assert.Equal(comment.Text, createdComment.Text);
+            Assert.Equal(createdWorkout.WorkoutID, createdComment.WorkoutID);
+            Assert.True((DateTime.UtcNow - createdComment.CreatedAt).TotalSeconds < 60);
+        }
+
+        // Test for user story 10 (create comment user story)
+        [Fact]
+        public async Task CreateCommentOnRun_WithValidRunId_ReturnsCreated()
+        {
+            await AuthorizeClientAsync();
+
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var run = new
+            {
+                TrainingPlanID = trainingPlanId,
+                Type = "Easy",
+                WeekNumber = 2,
+                DayOfWeek = (DayOfWeek)3,
+            };
+
+            var runResponse = await _client.PostAsJsonAsync("api/run/add", run);
+            runResponse.EnsureSuccessStatusCode();
+            var createdrun = await runResponse.Content.ReadFromJsonAsync<Run>();
+
+            var comment = new
+            {
+                createdrun!.RunID,
+                Text = "Great job on this run!",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var commentResponse = await _client.PostAsJsonAsync("api/comment/add", comment);
+
+            Assert.Equal(HttpStatusCode.Created, commentResponse.StatusCode);
+
+            var createdComment = await commentResponse.Content.ReadFromJsonAsync<Comment>();
+            Assert.NotNull(createdComment);
+            Assert.Equal(comment.Text, createdComment.Text);
+            Assert.Equal(createdrun.RunID, createdComment.RunID);
+            Assert.True((DateTime.UtcNow - createdComment.CreatedAt).TotalSeconds < 60);
+        }
+
+        // Test for user story 11 (update training plan user story)
+        [Fact]
+        public async Task UpdateTrainingPlan_WithValidDataAndPermission_ReturnsOk()
+        {
+            await AuthorizeClientAsync();
+
+            var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
+
+            var getResponse = await _client.GetAsync($"api/trainingplan/{trainingPlanId}");
+            getResponse.EnsureSuccessStatusCode();
+            var existingTrainingPlan = await getResponse.Content.ReadFromJsonAsync<TrainingPlan>();
+            Assert.NotNull(existingTrainingPlan);
+
+            existingTrainingPlan!.Name = "Updated Plan Name";
+
+            var updateResponse = await _client.PutAsJsonAsync("api/trainingplan/update", existingTrainingPlan);
+
+            Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+            var updatedTrainingPlan = await updateResponse.Content.ReadFromJsonAsync<TrainingPlan>();
+            Assert.NotNull(updatedTrainingPlan);
+            Assert.Equal(existingTrainingPlan.Name, updatedTrainingPlan.Name);
+        }
     }
     public class ErrorResponse
     {
