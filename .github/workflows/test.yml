@@ -31,6 +31,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
+      - name: Run EF Migrations
+        run: dotnet ef database update --project YourProject.csproj --startup-project YourStartupProject.csproj
+
       # Run tests
       - name: Run Tests
         run: dotnet test --no-build --configuration Release

@@ -451,13 +451,6 @@ namespace RunningPlanner.Tests
 
             var response = await _client.PostAsJsonAsync("api/runningroute/add", route);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"StatusCode: {response.StatusCode}");
-                Console.WriteLine($"Error content: {errorContent}");
-            }
-
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
             var created = await response.Content.ReadFromJsonAsync<RunningRoute>();
