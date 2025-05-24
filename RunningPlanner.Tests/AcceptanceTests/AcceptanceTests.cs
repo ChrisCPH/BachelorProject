@@ -445,7 +445,7 @@ namespace RunningPlanner.Tests
                 new() { 12.4964, 41.9028 }
             }
                 },
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
                 DistanceKm = 5.2
             };
 
