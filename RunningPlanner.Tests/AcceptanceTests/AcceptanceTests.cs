@@ -440,16 +440,23 @@ namespace RunningPlanner.Tests
                 {
                     Type = "LineString",
                     Coordinates = new List<List<double>>
-            {
-                new() { 12.4924, 41.8902 },
-                new() { 12.4964, 41.9028 }
-            }
+                    {
+                        new() { 12.4924, 41.8902 },
+                        new() { 12.4964, 41.9028 }
+                    }
                 },
                 CreatedAt = new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc),
                 DistanceKm = 5.2
             };
 
             var response = await _client.PostAsJsonAsync("api/runningroute/add", route);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"StatusCode: {response.StatusCode}");
+                Console.WriteLine($"Error content: {errorContent}");
+            }
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
