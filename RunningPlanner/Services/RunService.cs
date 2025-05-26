@@ -46,6 +46,8 @@ namespace RunningPlanner.Services
 
             var runsToCreate = new List<Run>();
 
+            var now = DateTime.UtcNow; // Supposed to help with speed instead of doing it in the loop
+
             for (int week = 1; week <= trainingPlan.Duration; week++)
             {
                 var runForWeek = new Run
@@ -60,7 +62,7 @@ namespace RunningPlanner.Services
                     Pace = run.Pace,
                     Notes = run.Notes,
                     Completed = run.Completed,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = now,
                 };
 
                 runsToCreate.Add(runForWeek);

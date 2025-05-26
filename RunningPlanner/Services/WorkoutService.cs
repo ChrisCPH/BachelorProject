@@ -46,6 +46,8 @@ namespace RunningPlanner.Services
 
             var workoutsToCreate = new List<Workout>();
 
+            var now = DateTime.UtcNow; // Supposed to help with speed instead of doing it in the loop
+
             for (int week = 1; week <= trainingPlan.Duration; week++)
             {
                 var workoutForWeek = new Workout
@@ -58,7 +60,7 @@ namespace RunningPlanner.Services
                     Duration = workout.Duration,
                     Notes = workout.Notes,
                     Completed = workout.Completed,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = now,
                 };
 
                 workoutsToCreate.Add(workoutForWeek);

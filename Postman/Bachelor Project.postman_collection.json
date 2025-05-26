@@ -1,0 +1,1361 @@
+{
+	"info": {
+		"_postman_id": "74a0ab24-74ce-4432-a525-5075b7de286d",
+		"name": "Bachelor Project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35192313"
+	},
+	"item": [
+		{
+			"name": "Run Endpoints",
+			"item": [
+				{
+					"name": "GetRunById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/run/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetRunsByTrainingPlan",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/run/trainingPlan/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"trainingPlan",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddRun",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"TrainingPlanID\": 1032,\r\n    \"Type\": null,\r\n    \"WeekNumber\": 1,\r\n    \"DayOfWeek\": 0,\r\n    \"TimeOfDay\": null,\r\n    \"Pace\": null,\r\n    \"Duration\": null,\r\n    \"Distance\": null,\r\n    \"Notes\": null,\r\n    \"Completed\": false,\r\n    \"RouteID\": null,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/run/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddRepeatRun",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"TrainingPlanID\": 1032,\r\n    \"Type\": \"Test\",\r\n    \"DayOfWeek\": 1,\r\n    \"TimeOfDay\": null,\r\n    \"Pace\": null,\r\n    \"Duration\": null,\r\n    \"Distance\": null,\r\n    \"Notes\": null,\r\n    \"Completed\": false,\r\n    \"RouteID\": null,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/run/add/repeat",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"add",
+								"repeat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateRun",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"RunID\": 1,\r\n    \"TrainingPlanID\": 1,\r\n    \"Type\": \"Updated\",\r\n    \"WeekNumber\": 1,\r\n    \"DayOfWeek\": 1,\r\n    \"TimeOfDay\": null,\r\n    \"Pace\": null,\r\n    \"Duration\": null,\r\n    \"Distance\": null,\r\n    \"Notes\": null,\r\n    \"Completed\": false,\r\n    \"RouteID\": null,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/run/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteRun",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/run/delete/1014",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"delete",
+								"1014"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CompleteRun",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "true",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/run/complete/1023",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"complete",
+								"1023"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddRoute",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"6824f327157178152c0d26fa\"\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/run/1023/route",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"run",
+								"1023",
+								"route"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Training Plan Endpoints",
+			"item": [
+				{
+					"name": "GetTrainingPlanById",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTQxOTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.Tb_oskNbbKIbcx7EZVZKZe9EaVibpJcRNmnroQlO0ss",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/trainingplan/1029",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"trainingplan",
+								"1029"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllTrainingPlansByUser",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NDY0MjYsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.5ryaCElQZyyqPHw9Ut6OrigZ32JXqZuUhz4YdXIayF8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/trainingplan/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"trainingplan",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllTrainingPlansByUserWithPermissions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NDY0MjYsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.5ryaCElQZyyqPHw9Ut6OrigZ32JXqZuUhz4YdXIayF8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/trainingplan/planswithpermission",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"trainingplan",
+								"planswithpermission"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTrainingPlan",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Name\": \"mara\",\r\n    \"StartDate\": null,\r\n    \"Duration\": 16,\r\n    \"Event\": \"\",\r\n    \"GoalTime\": \"\",\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/trainingplan/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"trainingplan",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateTrainingPlan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTgxMTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.sHaFa2xYqxNfiZmO4sfZe0ENaR11zLvtWNGWcLJN17U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"TrainingPlanID\": \"7\",\r\n    \"Name\": \"Should update\",\r\n    \"StartDate\": null,\r\n    \"Duration\": 14,\r\n    \"Event\": \"\",\r\n    \"GoalTime\": \"\",\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/trainingplan/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"trainingplan",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteTrainingPlan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTQxOTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.Tb_oskNbbKIbcx7EZVZKZe9EaVibpJcRNmnroQlO0ss",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/trainingplan/delete/1029",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"trainingplan",
+								"delete",
+								"1029"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Endpoints",
+			"item": [
+				{
+					"name": "GetUserById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/user/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"user",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetUserByName",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/user/get/thisisauser",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"user",
+								"get",
+								"thisisauser"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\": \"runner@email.com\",\r\n    \"Password\": \"user2user\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/user/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"user",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"UserName\": \"thisisanewuser111\",\r\n    \"Email\": \"newuser111@email.com\",\r\n    \"Password\": \"user3user\",\r\n    \"PreferredDistance\": \"km\",\r\n    \"PreferredWeight\": \"kg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/user/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddUserToTrainingPlan",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/user/addUserToTrainingPlan?userId=3&id=2&permission=viewer",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"user",
+								"addUserToTrainingPlan"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "3"
+								},
+								{
+									"key": "id",
+									"value": "2"
+								},
+								{
+									"key": "permission",
+									"value": "viewer"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workout Endpoints",
+			"item": [
+				{
+					"name": "GetWorkoutById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/workout/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetWorkoutsByTrainingPlan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTgxMTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.sHaFa2xYqxNfiZmO4sfZe0ENaR11zLvtWNGWcLJN17U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/workout/trainingPlan/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"trainingPlan",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddWorkout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"TrainingPlanID\": 1032,\r\n    \"Type\": \"Strength\",\r\n    \"WeekNumber\": 5,\r\n    \"DayOfWeek\": 3,\r\n    \"TimeOfDay\": null,\r\n    \"Duration\": null,\r\n    \"Notes\": null,\r\n    \"Completed\": false,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/workout/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddRepeatWorkout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"TrainingPlanID\": 1032,\r\n    \"Type\": \"Strength\",\r\n    \"DayOfWeek\": 3,\r\n    \"TimeOfDay\": null,\r\n    \"Duration\": null,\r\n    \"Notes\": null,\r\n    \"Completed\": false,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/workout/add/repeat",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"add",
+								"repeat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateWorkout",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"WorkoutID\": 8,\r\n    \"TrainingPlanID\": 1,\r\n    \"Type\": \"Strength\",\r\n    \"WeekNumber\": 5,\r\n    \"DayOfWeek\": 3,\r\n    \"TimeOfDay\": null,\r\n    \"Duration\": null,\r\n    \"Notes\": null,\r\n    \"Completed\": false,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/workout/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteWorkout",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/workout/delete/8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"delete",
+								"8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CompleteWorkout",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "false",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/workout/complete/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"workout",
+								"complete",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Exercise Endpoints",
+			"item": [
+				{
+					"name": "GetExerciseById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/exercise/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"exercise",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllExercisesByWorkout",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/exercise/workout/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"exercise",
+								"workout",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddExercise",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"WorkoutID\": 1,\r\n    \"Name\": \"Deadlift\",\r\n    \"Sets\": 4,\r\n    \"Reps\": 8,\r\n    \"Weight\": 50\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/exercise/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"exercise",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateExercise",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ExerciseID\": 1007,\r\n    \"WorkoutID\": 1011,\r\n    \"Name\": \"Push-ups\",\r\n    \"Sets\": 4,\r\n    \"Reps\": 12,\r\n    \"Weight\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/exercise/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"exercise",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteExercise",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/exercise/delete/1002",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"exercise",
+								"delete",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RunningRoute Endpoints",
+			"item": [
+				{
+					"name": "GetRunningRoute",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/runningroute/681a792d03f6a7d7a749c347",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"runningroute",
+								"681a792d03f6a7d7a749c347"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllRunningRoutes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/runningroute/getAll",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"runningroute",
+								"getAll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddRunningRoute",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ID\": \"\",\r\n    \"Name\": \"15 km Running Route\",\r\n    \"Geometry\": {\r\n        \"type\": \"LineString\",\r\n        \"coordinates\": [\r\n            [\r\n                12.5683,\r\n                55.6761\r\n            ],\r\n            [\r\n                12.5689,\r\n                55.6764\r\n            ],\r\n            [\r\n                12.5695,\r\n                55.6768\r\n            ],\r\n            [\r\n                12.5702,\r\n                55.6771\r\n            ]\r\n        ]\r\n    },\r\n    \"DistanceKm\": 15.0,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/runningroute/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"runningroute",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateRunningRoute",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ID\": \"6824f327157178152c0d26fa\",\r\n    \"Name\": \"11 km Running Route\",\r\n    \"Geometry\": {\r\n        \"type\": \"LineString\",\r\n        \"coordinates\": [\r\n            [\r\n                12.5683,\r\n                55.6761\r\n            ],\r\n            [\r\n                12.5689,\r\n                55.6764\r\n            ],\r\n            [\r\n                12.5695,\r\n                55.6768\r\n            ],\r\n            [\r\n                12.5702,\r\n                55.6771\r\n            ]\r\n        ]\r\n    },\r\n    \"DistanceKm\": 11.0,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/runningroute/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"runningroute",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteRunningRoute",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY1NzA4ODQsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.dz61PvjUVJTPMGBjMGZaHLRbs74LPnl3Ybz9JwevrTQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/runningroute/delete/681a82b0484e0b30fff6295f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"runningroute",
+								"delete",
+								"681a82b0484e0b30fff6295f"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Feedback Endpoints",
+			"item": [
+				{
+					"name": "GetFeedback",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/feedback/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"feedback",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetFeedbackByRun",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/feedback/run/1025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"feedback",
+								"run",
+								"1025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddFeedback",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"RunID\": 1025,\r\n    \"EffortRating\": 6,\r\n    \"FeelRating\": 8,\r\n    \"Pace\": 5,\r\n    \"Duration\": 1800,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\",\r\n    \"Comment\": \"this is a comment\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/feedback/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"feedback",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateFeedback",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FeedbackID\": 3,\r\n    \"RunID\": 1023,\r\n    \"EffortRating\": 2,\r\n    \"FeelRating\": 8,\r\n    \"Pace\": 5,\r\n    \"Duration\": 1800,\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\",\r\n    \"Comment\": \"this is a comment\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/feedback/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"feedback",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteFeedback",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/feedback/delete/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"feedback",
+								"delete",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comment Endpoints",
+			"item": [
+				{
+					"name": "GetComment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/comment/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"comment",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllCommentsRun",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/comment/run/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"comment",
+								"run",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllCommentsWorkout",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/comment/workout/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"comment",
+								"workout",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddComment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"RunID\": 1,\r\n    \"WorkoutID\": null,\r\n    \"Text\": \"This is text\",\r\n    \"CreatedAt\": \"2024-12-01T18:55:39.660Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/comment/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"comment",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateComment",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"CommentID\": 1023,\r\n    \"RunID\": null,\r\n    \"WorkoutID\": 1012,\r\n    \"Text\": \"Yes sir\",\r\n    \"CreatedAt\": \"2025-05-12T22:32:14.111Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5015/api/comment/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"comment",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteComment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5015/api/comment/delete/1003",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5015",
+							"path": [
+								"api",
+								"comment",
+								"delete",
+								"1003"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXJ1bm5lciIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InJ1bm5lckBlbWFpbC5jb20iLCJVc2VySUQiOiIyIiwiZXhwIjoxNzQ3OTU3MzAwLCJpc3MiOiJSdW5uaW5nUGxhbm5lciIsImF1ZCI6IlJ1bm5pbmdQbGFubmVyVXNlcnMifQ.bsVQapPM-dffOSZ-KY62zi8wjMQbIonQ1j2JQNQzzr8",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
