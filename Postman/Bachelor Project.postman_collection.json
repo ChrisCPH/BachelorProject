@@ -235,16 +235,6 @@
 				{
 					"name": "GetTrainingPlanById",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTQxOTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.Tb_oskNbbKIbcx7EZVZKZe9EaVibpJcRNmnroQlO0ss",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -266,16 +256,6 @@
 				{
 					"name": "GetAllTrainingPlansByUser",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NDY0MjYsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.5ryaCElQZyyqPHw9Ut6OrigZ32JXqZuUhz4YdXIayF8",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -297,16 +277,6 @@
 				{
 					"name": "GetAllTrainingPlansByUserWithPermissions",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NDY0MjYsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.5ryaCElQZyyqPHw9Ut6OrigZ32JXqZuUhz4YdXIayF8",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -358,16 +328,6 @@
 				{
 					"name": "UpdateTrainingPlan",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTgxMTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.sHaFa2xYqxNfiZmO4sfZe0ENaR11zLvtWNGWcLJN17U",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -398,16 +358,6 @@
 				{
 					"name": "DeleteTrainingPlan",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTQxOTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.Tb_oskNbbKIbcx7EZVZKZe9EaVibpJcRNmnroQlO0ss",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
@@ -599,16 +549,6 @@
 				{
 					"name": "GetWorkoutsByTrainingPlan",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY2NTgxMTEsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.sHaFa2xYqxNfiZmO4sfZe0ENaR11zLvtWNGWcLJN17U",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -1012,16 +952,6 @@
 				{
 					"name": "DeleteRunningRoute",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ1c2VyQGVtYWlsLmNvbSIsIlVzZXJJRCI6IjEiLCJleHAiOjE3NDY1NzA4ODQsImlzcyI6IlJ1bm5pbmdQbGFubmVyIiwiYXVkIjoiUnVubmluZ1BsYW5uZXJVc2VycyJ9.dz61PvjUVJTPMGBjMGZaHLRbs74LPnl3Ybz9JwevrTQ",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
@@ -1331,7 +1261,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGhpc2lzYXJ1bm5lciIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InJ1bm5lckBlbWFpbC5jb20iLCJVc2VySUQiOiIyIiwiZXhwIjoxNzQ3OTU3MzAwLCJpc3MiOiJSdW5uaW5nUGxhbm5lciIsImF1ZCI6IlJ1bm5pbmdQbGFubmVyVXNlcnMifQ.bsVQapPM-dffOSZ-KY62zi8wjMQbIonQ1j2JQNQzzr8",
+				"value": "",
 				"type": "string"
 			}
 		]
