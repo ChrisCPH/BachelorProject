@@ -17,6 +17,7 @@ namespace RunningPlanner.Tests
             _client = factory.CreateClient();
         }
 
+        // End to End permissions test
         [Fact]
         public async Task UpdateTrainingPlan_WithAndWithoutPermission_EnforcesCorrectAccess()
         {
@@ -68,7 +69,7 @@ namespace RunningPlanner.Tests
             updateResponseB.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
-
+        // Testing authorization
         [Fact]
         public async Task UpdateTrainingPlan_Returns401_IfUserNotAuthenticated()
         {
