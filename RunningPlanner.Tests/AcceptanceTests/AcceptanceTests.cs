@@ -427,7 +427,6 @@ namespace RunningPlanner.Tests
         }
 
         // Test for user story 8 (create running route user story)
-        // Test doesn't work on GitHub Actions cant figure out why
         [Fact]
         public async Task CreateRunningRoute_WithValidData_ReturnsCreated()
         {

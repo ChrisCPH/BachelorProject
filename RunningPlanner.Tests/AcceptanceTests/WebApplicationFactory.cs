@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RunningPlanner.Data;
 using Microsoft.AspNetCore.Hosting;
 using MongoDB.Driver;
-using Mongo2Go;  // <-- Add this
+using Mongo2Go;
 
 namespace RunningPlanner.Tests
 {
@@ -16,7 +16,6 @@ namespace RunningPlanner.Tests
         {
             builder.ConfigureServices(services =>
             {
-                // Start Mongo2Go server if not already started
                 if (_mongoRunner == null)
                 {
                     _mongoRunner = MongoDbRunner.Start();
