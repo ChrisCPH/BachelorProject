@@ -103,7 +103,6 @@ public class RunningRouteController : ControllerBase
         }
     }
 
-
     [HttpDelete("delete/{id}")]
     public async Task<ActionResult> Delete(string id)
     {
@@ -116,5 +115,40 @@ public class RunningRouteController : ControllerBase
         {
             return NotFound();
         }
+    }
+
+    [HttpPost("nearby")]
+    public async Task<ActionResult<List<RunningRoute>>> GetRoutesNearPoint([FromBody] GeoPoint point)
+    {
+        if (point == null)
+            return BadRequest("Point data is required.");
+
+        var routes = await _runningRouteService.GetRoutesNearPointAsync(point.Longitude, point.Latitude, point.MaxDistanceMeters);
+
+        return Ok(routes);
+    }
+
+    [HttpPost("within")]
+    public async Task<ActionResult<List<RunningRoute>>> GetRoutesWithinPolygon([FromBody] Polygon polygon)
+    {
+        if (polygon == null || polygon.Coordinates.Count < 3)
+        {
+            return BadRequest("A valid polygon with at least 3 coordinates is required.");
+        }
+
+        var routes = await _runningRouteService.GetRoutesWithinPolygonAsync(polygon);
+        return Ok(routes);
+    }
+
+    [HttpPost("intersect")]
+    public async Task<ActionResult<List<RunningRoute>>> GetRoutesIntersectingPolygon([FromBody] Polygon polygon)
+    {
+        if (polygon?.Coordinates == null || polygon.Coordinates.Count < 4)
+        {
+            return BadRequest("Polygon coordinates must have at least 4 points (including closing point).");
+        }
+
+        var routes = await _runningRouteService.GetRoutesIntersectingPolygonAsync(polygon.Coordinates);
+        return Ok(routes);
     }
 }

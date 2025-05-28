@@ -10,6 +10,9 @@ namespace RunningPlanner.Services
         Task AddAsync(RunningRoute runningRoute);
         Task UpdateAsync(string id, RunningRoute runningRoute);
         Task DeleteAsync(string id);
+        Task<List<RunningRoute>> GetRoutesNearPointAsync(double longitude, double latitude, double maxDistanceMeters);
+        Task<List<RunningRoute>> GetRoutesWithinPolygonAsync(Polygon polygon);
+        Task<List<RunningRoute>> GetRoutesIntersectingPolygonAsync(List<List<double>> polygonCoordinates);
     }
 
     public class RunningRouteService : IRunningRouteService
@@ -64,6 +67,21 @@ namespace RunningPlanner.Services
             await _runRepository.RemoveRouteIdFromRunsAsync(id);
 
             await _runningRouteRepository.DeleteAsync(id);
+        }
+
+        public async Task<List<RunningRoute>> GetRoutesNearPointAsync(double longitude, double latitude, double maxDistanceMeters)
+        {
+            return await _runningRouteRepository.FindRoutesNearPointAsync(longitude, latitude, maxDistanceMeters);
+        }
+
+        public async Task<List<RunningRoute>> GetRoutesWithinPolygonAsync(Polygon polygon)
+        {
+            return await _runningRouteRepository.GetRoutesWithinPolygonAsync(polygon.Coordinates);
+        }
+
+        public async Task<List<RunningRoute>> GetRoutesIntersectingPolygonAsync(List<List<double>> polygonCoordinates)
+        {
+            return await _runningRouteRepository.GetRoutesGeoIntersectsAsync(polygonCoordinates);
         }
     }
 }

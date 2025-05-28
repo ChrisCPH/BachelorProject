@@ -1,23 +1,17 @@
-import { MapContainer, TileLayer, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import { RouteMap } from '../components/RouteMap';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { RunningRoute, GeoJsonLineString, Route } from '../types/RunningRoute';
+import { GeoPoint } from '../types/GeoPoint';
+import { Polygon } from '../types/Polygon';
 import { useSearchParams } from 'react-router-dom';
+import { PolygonDrawer } from '../components/PolygonDrawer';
+import { FlyToRoute } from '../components/FlyToRoute';
+import { LocationMarker } from '../components/LocationMarker';
 
-function FlyToRoute({ coordinates }: { coordinates: [number, number][] }) {
-    const map = useMap();
-
-    useEffect(() => {
-        if (coordinates.length > 0) {
-            const bounds = coordinates.map(([lng, lat]) => [lat, lng]);
-            map.fitBounds(bounds as [number, number][]);
-        }
-    }, [coordinates]);
-
-    return null;
-}
+type SearchMode = 'point' | 'within' | 'intersect' | null;
 
 export default function RoutePlanner() {
     const [route, setRoute] = useState<Route | null>(null);
@@ -28,15 +22,85 @@ export default function RoutePlanner() {
     const [selectedRouteCoords, setSelectedRouteCoords] = useState<[number, number][]>([]);
     const [editingRoute, setEditingRoute] = useState<RunningRoute | null>(null);
     const [searchParams] = useSearchParams();
+    const [selectedPoint, setSelectedPoint] = useState<GeoPoint | null>(null);
+    const [selectedPolygon, setSelectedPolygon] = useState<Polygon | null>(null);
+    const [maxDistance, setMaxDistance] = useState<number>(50); // in km
+    const [searchMode, setSearchMode] = useState<SearchMode>(null);
     const selectedRouteId = searchParams.get('routeId');
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    const fetchAndSelectRoute = async () => {
+    const fetchNearbyRoutes = async (point: GeoPoint) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/runningroute/getAll`, {
+            const res = await fetch(`${API_BASE_URL}/runningroute/nearby`, {
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
+                body: JSON.stringify({
+                    ...point,
+                    maxDistanceMeters: maxDistance * 1000 // convert km to meters
+                }),
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+
+            const data = await res.json();
+            setSavedRoutes(data);
+
+            if (selectedRouteId) {
+                const match = data.find((r: RunningRoute) => r.id === selectedRouteId);
+                if (match) {
+                    setEditingRoute(match);
+                    setRouteName(match.name);
+                    setSelectedRouteCoords([]);
+                    setRoute(null);
+                }
+            }
+        } catch (err: any) {
+            setMessage(`Failed to fetch routes: ${err.message}`);
+        }
+    };
+
+    const fetchRoutesWithinPolygon = async (polygon: Polygon) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/runningroute/within`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify(polygon),
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+
+            const data = await res.json();
+            setSavedRoutes(data);
+
+            if (selectedRouteId) {
+                const match = data.find((r: RunningRoute) => r.id === selectedRouteId);
+                if (match) {
+                    setEditingRoute(match);
+                    setRouteName(match.name);
+                    setSelectedRouteCoords([]);
+                    setRoute(null);
+                }
+            }
+        } catch (err: any) {
+            setMessage(`Failed to fetch routes: ${err.message}`);
+        }
+    };
+
+    const fetchRoutesIntersectingPolygon = async (polygon: Polygon) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/runningroute/intersect`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify(polygon),
             });
 
             if (!res.ok) throw new Error(await res.text());
@@ -59,8 +123,14 @@ export default function RoutePlanner() {
     };
 
     useEffect(() => {
-        fetchAndSelectRoute();
-    }, [selectedRouteId]);
+        if (selectedPoint && searchMode === 'point') {
+            fetchNearbyRoutes(selectedPoint);
+        } else if (selectedPolygon && searchMode === 'within') {
+            fetchRoutesWithinPolygon(selectedPolygon);
+        } else if (selectedPolygon && searchMode === 'intersect') {
+            fetchRoutesIntersectingPolygon(selectedPolygon);
+        }
+    }, [selectedPoint, selectedPolygon, maxDistance, selectedRouteId, searchMode]);
 
     const saveRunningRoute = async (route: Route) => {
         const geometry: GeoJsonLineString = {
@@ -94,7 +164,15 @@ export default function RoutePlanner() {
             setTimeout(() => setMessage(null), 4000);
             setRoute(null);
             setRouteName('');
-            fetchAndSelectRoute();
+            if (searchMode === 'point' && selectedPoint) {
+                fetchNearbyRoutes(selectedPoint);
+            } else if ((searchMode === 'within' || searchMode === 'intersect') && selectedPolygon) {
+                if (searchMode === 'within') {
+                    fetchRoutesWithinPolygon(selectedPolygon);
+                } else {
+                    fetchRoutesIntersectingPolygon(selectedPolygon);
+                }
+            }
         } catch (err: any) {
             setMessage(`Failed to save: ${err.message}`);
         } finally {
@@ -119,7 +197,15 @@ export default function RoutePlanner() {
             setMessage('Route deleted successfully!');
             setTimeout(() => setMessage(null), 4000);
             resetMapState();
-            fetchAndSelectRoute();
+            if (searchMode === 'point' && selectedPoint) {
+                fetchNearbyRoutes(selectedPoint);
+            } else if ((searchMode === 'within' || searchMode === 'intersect') && selectedPolygon) {
+                if (searchMode === 'within') {
+                    fetchRoutesWithinPolygon(selectedPolygon);
+                } else {
+                    fetchRoutesIntersectingPolygon(selectedPolygon);
+                }
+            }
         } catch (err: any) {
             setMessage(`Failed to delete route: ${err.message}`);
         }
@@ -168,23 +254,161 @@ export default function RoutePlanner() {
         setRouteName('');
     };
 
-    return (
-        <div style={{ height: '100vh', display: 'flex' }}>
-            <div style={{ width: '300px', padding: '10px', backgroundColor: '#f7f7f7', overflowY: 'auto' }}>
-                <h3>Routes</h3>
+    const handleLocationSelect = (point: GeoPoint) => {
+        setSelectedPoint(point);
+        setSelectedPolygon(null);
+    };
+
+    const handlePolygonComplete = (polygon: Polygon) => {
+        setSelectedPolygon(polygon);
+        setSelectedPoint(null);
+    };
+
+    const handleResetSearch = () => {
+        setSelectedPoint(null);
+        setSelectedPolygon(null);
+        setSearchMode(null);
+        setSavedRoutes([]);
+        resetMapState();
+    };
+
+    const renderSidebarContent = () => {
+        if (!searchMode) {
+            return (
+                <div>
+                    <h3>Search Options</h3>
+                    <button
+                        onClick={() => setSearchMode('point')}
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            marginBottom: '10px',
+                            padding: '10px',
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Get routes near a point
+                    </button>
+                    <button
+                        onClick={() => setSearchMode('within')}
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            marginBottom: '10px',
+                            padding: '10px',
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Get routes within triangle
+                    </button>
+                    <button
+                        onClick={() => setSearchMode('intersect')}
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            marginBottom: '10px',
+                            padding: '10px',
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Get routes intersecting triangle
+                    </button>
+                </div>
+            );
+        }
+
+        if (searchMode === 'point' && !selectedPoint) {
+            return (
+                <div>
+                    <h3>Select a location</h3>
+                    <p>Click on the map to select a point to search for nearby routes.</p>
+                    <div style={{ marginBottom: '10px' }}>
+                        <label>
+                            Max distance (km):
+                            <input
+                                type="range"
+                                min="1"
+                                max="50"
+                                value={maxDistance}
+                                onChange={(e) => setMaxDistance(Number(e.target.value))}
+                                style={{ width: '100%' }}
+                            />
+                            {maxDistance} km
+                        </label>
+                    </div>
+                    <button
+                        onClick={handleResetSearch}
+                        style={{
+                            marginBottom: '5px',
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Back to options
+                    </button>
+                </div>
+            );
+        }
+
+        if ((searchMode === 'within' || searchMode === 'intersect') && !selectedPolygon) {
+            return (
+                <div>
+                    <h3>{searchMode === 'within' ? 'Draw area to find routes within' : 'Draw area to find routes intersecting'}</h3>
+                    <p>Draw a triangle on the map to search for routes.</p>
+                    <button
+                        onClick={handleResetSearch}
+                        style={{
+                            marginBottom: '5px',
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Back to options
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <>
+                <h3>
+                    {searchMode === 'point' ? `Routes within ${maxDistance} km` :
+                        searchMode === 'within' ? 'Routes within area' : 'Routes intersecting area'}
+                </h3>
                 <button
-                    onClick={() => {
-                        setSelectedRouteCoords([]);
-                        setEditingRoute(null);
-                        setRoute(null);
-                        setRouteName('');
-                    }}
+                    onClick={handleResetSearch}
                     style={{
                         marginBottom: '5px',
                         backgroundColor: '#f0f0f0',
                         border: '1px solid #ccc',
                         borderRadius: '4px',
                         cursor: 'pointer'
+                    }}
+                >
+                    Change Search
+                </button>
+                <button
+                    onClick={resetMapState}
+                    style={{
+                        marginBottom: '5px',
+                        backgroundColor: '#f0f0f0',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginLeft: '5px'
                     }}
                 >
                     Clear Map
@@ -223,7 +447,50 @@ export default function RoutePlanner() {
                         </div>
                     </div>
                 ))}
+            </>
+        );
+    };
 
+    const renderMapContent = () => {
+        if (!searchMode) {
+            return null;
+        }
+
+        if (searchMode === 'point' && !selectedPoint) {
+            return <LocationMarker onLocationSelect={handleLocationSelect} />;
+        }
+
+        if ((searchMode === 'within' || searchMode === 'intersect') && !selectedPolygon) {
+            return <PolygonDrawer
+                onPolygonComplete={handlePolygonComplete}
+                mode={searchMode}
+            />;
+        }
+
+        return (
+            <>
+                <RouteMap
+                    onRouteCreated={handleRouteCreated}
+                    existingRoute={editingRoute ? {
+                        path: editingRoute.geometry.coordinates.map(([lng, lat]) => ({ latitude: lat, longitude: lng })),
+                        distanceKm: editingRoute.distanceKm || 0
+                    } : null}
+                />
+
+                {selectedRouteCoords.length > 0 && (
+                    <>
+                        <Polyline positions={selectedRouteCoords.map(([lng, lat]) => [lat, lng])} color="green" />
+                        <FlyToRoute coordinates={selectedRouteCoords} />
+                    </>
+                )}
+            </>
+        );
+    };
+
+    return (
+        <div style={{ height: '100vh', display: 'flex' }}>
+            <div style={{ width: '300px', padding: '10px', backgroundColor: '#f7f7f7', overflowY: 'auto' }}>
+                {renderSidebarContent()}
             </div>
 
             <div style={{ flex: 1, position: 'relative' }}>
@@ -236,20 +503,7 @@ export default function RoutePlanner() {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
-                    <RouteMap
-                        onRouteCreated={handleRouteCreated}
-                        existingRoute={editingRoute ? {
-                            path: editingRoute.geometry.coordinates.map(([lng, lat]) => ({ latitude: lat, longitude: lng })),
-                            distanceKm: editingRoute.distanceKm || 0
-                        } : null}
-                    />
-
-                    {selectedRouteCoords.length > 0 && (
-                        <>
-                            <Polyline positions={selectedRouteCoords.map(([lng, lat]) => [lat, lng])} color="green" />
-                            <FlyToRoute coordinates={selectedRouteCoords} />
-                        </>
-                    )}
+                    {renderMapContent()}
                 </MapContainer>
 
                 {route && (
@@ -314,4 +568,4 @@ export default function RoutePlanner() {
             </div>
         </div>
     );
-}
+} 
