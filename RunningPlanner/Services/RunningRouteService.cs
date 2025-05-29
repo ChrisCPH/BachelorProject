@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -43,6 +44,8 @@ namespace RunningPlanner.Services
 
         public async Task AddAsync(RunningRoute route)
         {
+            route.Name = WebUtility.HtmlEncode(route.Name);
+
             await _runningRouteRepository.AddAsync(route);
         }
 
@@ -53,6 +56,9 @@ namespace RunningPlanner.Services
             {
                 throw new KeyNotFoundException($"Route with id {id} not found");
             }
+
+            route.Name = WebUtility.HtmlEncode(route.Name);
+            
             await _runningRouteRepository.UpdateAsync(id, route);
         }
 

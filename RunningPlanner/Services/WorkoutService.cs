@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -31,6 +32,9 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(workout), "Workout data is required.");
             }
 
+            workout.Notes = WebUtility.HtmlEncode(workout.Notes);
+            workout.Type = WebUtility.HtmlEncode(workout.Type);
+
             return await _workoutRepository.AddWorkoutAsync(workout);
         }
 
@@ -47,6 +51,9 @@ namespace RunningPlanner.Services
             var workoutsToCreate = new List<Workout>();
 
             var now = DateTime.UtcNow; // Supposed to help with speed instead of doing it in the loop
+
+            workout.Notes = WebUtility.HtmlEncode(workout.Notes);
+            workout.Type = WebUtility.HtmlEncode(workout.Type);
 
             for (int week = 1; week <= trainingPlan.Duration; week++)
             {
@@ -87,6 +94,9 @@ namespace RunningPlanner.Services
             {
                 throw new ArgumentNullException(nameof(workout), "Workout data is required.");
             }
+
+            workout.Notes = WebUtility.HtmlEncode(workout.Notes);
+            workout.Type = WebUtility.HtmlEncode(workout.Type);
 
             return await _workoutRepository.UpdateWorkoutAsync(workout);
         }

@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -29,6 +30,10 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(trainingPlan), "Training plan data is required.");
             }
 
+            trainingPlan.Name = WebUtility.HtmlEncode(trainingPlan.Name);
+            trainingPlan.Event = WebUtility.HtmlEncode(trainingPlan.Event);
+            trainingPlan.GoalTime = WebUtility.HtmlEncode(trainingPlan.GoalTime);
+
             return await _trainingPlanRepository.AddTrainingPlanAsync(trainingPlan, userId);
         }
 
@@ -54,9 +59,13 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(trainingPlan), "Training plan data is required.");
             }
 
+            trainingPlan.Name = WebUtility.HtmlEncode(trainingPlan.Name);
+            trainingPlan.Event = WebUtility.HtmlEncode(trainingPlan.Event);
+            trainingPlan.GoalTime = WebUtility.HtmlEncode(trainingPlan.GoalTime);
+
             return await _trainingPlanRepository.UpdateTrainingPlanAsync(trainingPlan);
         }
-        
+
         public async Task<bool> DeleteTrainingPlanAsync(int trainingPlanId)
         {
             return await _trainingPlanRepository.DeleteTrainingPlanAsync(trainingPlanId);

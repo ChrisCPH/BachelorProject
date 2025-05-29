@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Net;
 
 namespace RunningPlanner.Services
 {
@@ -65,6 +66,8 @@ namespace RunningPlanner.Services
             user.Password = _passwordHasher.HashPassword(user, user.Password);
 
             user.CreatedAt = DateTime.UtcNow;
+
+            user.Email = WebUtility.HtmlEncode(user.Email);
 
             return await _userRepository.AddUserAsync(user);
         }
@@ -129,6 +132,8 @@ namespace RunningPlanner.Services
             {
                 return (false, "User already has 'Owner' permission for this training plan.");
             }
+            
+            permission = WebUtility.HtmlEncode(permission);
 
             return await _userRepository.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission.ToLower());
         }

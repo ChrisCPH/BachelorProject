@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -34,6 +35,8 @@ namespace RunningPlanner.Services
                 throw new InvalidOperationException("Feedback for this run already exists.");
             }
 
+            feedback.Comment = WebUtility.HtmlEncode(feedback.Comment);
+
             return await _feedbackRepository.AddFeedbackAsync(feedback);
         }
 
@@ -54,6 +57,8 @@ namespace RunningPlanner.Services
             {
                 throw new ArgumentNullException(nameof(feedback), "Feedback data is required.");
             }
+
+            feedback.Comment = WebUtility.HtmlEncode(feedback.Comment);
 
             return await _feedbackRepository.UpdateFeedbackAsync(feedback);
         }

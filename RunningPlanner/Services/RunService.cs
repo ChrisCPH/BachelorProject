@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -31,6 +32,9 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(run), "Run data is required.");
             }
 
+            run.Type = WebUtility.HtmlEncode(run.Type);
+            run.Notes = WebUtility.HtmlEncode(run.Notes);
+
             return await _runRepository.AddRunAsync(run);
         }
 
@@ -47,6 +51,9 @@ namespace RunningPlanner.Services
             var runsToCreate = new List<Run>();
 
             var now = DateTime.UtcNow; // Supposed to help with speed instead of doing it in the loop
+
+            run.Type = WebUtility.HtmlEncode(run.Type);
+            run.Notes = WebUtility.HtmlEncode(run.Notes);
 
             for (int week = 1; week <= trainingPlan.Duration; week++)
             {
@@ -89,6 +96,9 @@ namespace RunningPlanner.Services
             {
                 throw new ArgumentNullException(nameof(run), "Run data is required.");
             }
+
+            run.Type = WebUtility.HtmlEncode(run.Type);
+            run.Notes = WebUtility.HtmlEncode(run.Notes);
 
             return await _runRepository.UpdateRunAsync(run);
         }

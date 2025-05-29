@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -29,6 +30,8 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(comment), "Comment data is required.");
             }
 
+            comment.Text = WebUtility.HtmlEncode(comment.Text);
+
             return await _commentRepository.AddCommentAsync(comment);
         }
 
@@ -53,6 +56,8 @@ namespace RunningPlanner.Services
             {
                 throw new ArgumentNullException(nameof(comment), "Comment data is required.");
             }
+
+            comment.Text = WebUtility.HtmlEncode(comment.Text);
 
             return await _commentRepository.UpdateCommentAsync(comment);
         }

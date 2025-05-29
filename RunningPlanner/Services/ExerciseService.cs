@@ -1,3 +1,4 @@
+using System.Net;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
 
@@ -28,6 +29,8 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(exercise), "Exercise data is required.");
             }
 
+            exercise.Name = WebUtility.HtmlEncode(exercise.Name);
+
             return await _exerciseRepository.AddExerciseAsync(exercise);
         }
 
@@ -47,6 +50,8 @@ namespace RunningPlanner.Services
             {
                 throw new ArgumentNullException(nameof(exercise), "Exercise data is required.");
             }
+
+            exercise.Name = WebUtility.HtmlEncode(exercise.Name);
 
             return await _exerciseRepository.UpdateExerciseAsync(exercise);
         }
