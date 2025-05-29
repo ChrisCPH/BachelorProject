@@ -15,39 +15,10 @@ public class TrainingPlanPermissionAuthorize : AuthorizeAttribute, IAsyncActionF
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var userIdClaim = context.HttpContext.User.FindFirst("UserID");
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        var userId = GetUserIdFromContext(context);
+        if (userId == null)
         {
             context.Result = new UnauthorizedResult();
-            return;
-        }
-
-        int? trainingPlanId = null;
-
-        // Try to get from route (e.g. /trainingplan/{id})
-        if (context.ActionArguments.TryGetValue("id", out var routeIdObj) && routeIdObj is int routeId)
-        {
-            trainingPlanId = routeId;
-        }
-        else
-        {
-            // Otherwise, try to get TrainingPlanID from a model in the request body
-            foreach (var arg in context.ActionArguments.Values)
-            {
-                if (arg == null) continue;
-
-                var prop = arg.GetType().GetProperty("TrainingPlanID");
-                if (prop != null && prop.GetValue(arg) is int bodyId)
-                {
-                    trainingPlanId = bodyId;
-                    break;
-                }
-            }
-        }
-
-        if (trainingPlanId == null)
-        {
-            context.Result = new BadRequestObjectResult("Training plan ID is missing.");
             return;
         }
 
@@ -58,22 +29,74 @@ public class TrainingPlanPermissionAuthorize : AuthorizeAttribute, IAsyncActionF
             return;
         }
 
-        var userPlan = await dbContext.UserTrainingPlan
-            .AsNoTracking()
-            .FirstOrDefaultAsync(up => up.UserID == userId && up.TrainingPlanID == trainingPlanId.Value);
+        var trainingPlanId = ResolveTrainingPlanId(context);
+        if (trainingPlanId == null)
+        {
+            context.Result = new BadRequestObjectResult("Training plan ID is missing.");
+            return;
+        }
 
-        if (userPlan == null)
+        var (isUserFound, hasCorrectPermission) = await HasPermissionAsync(userId.Value, trainingPlanId.Value, dbContext);
+
+        if (!isUserFound)
         {
             context.Result = new ForbidResult();
             return;
         }
 
-        if (!_allowedPermissions.Contains(userPlan.Permission, StringComparer.OrdinalIgnoreCase))
+        if (!hasCorrectPermission)
         {
-            context.Result = new UnauthorizedObjectResult(new { message = $"You do not have the required permissions. Required: {string.Join(", ", _allowedPermissions)}" });
+            context.Result = new UnauthorizedObjectResult(new
+            {
+                message = $"You do not have the required permissions. Required: {string.Join(", ", _allowedPermissions)}"
+            });
             return;
         }
 
         await next();
+    }
+
+    private int? GetUserIdFromContext(ActionExecutingContext context)
+    {
+        var userIdClaim = context.HttpContext.User.FindFirst("UserID");
+        return userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId)
+            ? userId
+            : null;
+    }
+
+    private int? ResolveTrainingPlanId(ActionExecutingContext context)
+    {
+        if (context.ActionArguments.TryGetValue("id", out var idObj) && idObj is int id)
+        {
+            return id;
+        }
+
+        foreach (var arg in context.ActionArguments.Values)
+        {
+            if (arg == null) continue;
+
+            var prop = arg.GetType().GetProperty("TrainingPlanID");
+            if (prop != null && prop.GetValue(arg) is int bodyId)
+            {
+                return bodyId;
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<(bool isUserFound, bool hasCorrectPermission)> HasPermissionAsync(int userId, int trainingPlanId, RunningPlannerDbContext dbContext)
+    {
+        var userPermission = await dbContext.UserTrainingPlan
+            .AsNoTracking()
+            .FirstOrDefaultAsync(up => up.UserID == userId && up.TrainingPlanID == trainingPlanId);
+
+        if (userPermission == null)
+        {
+            return (false, false);
+        }
+
+        var hasCorrectPermission = _allowedPermissions.Contains(userPermission.Permission, StringComparer.OrdinalIgnoreCase);
+        return (true, hasCorrectPermission);
     }
 }

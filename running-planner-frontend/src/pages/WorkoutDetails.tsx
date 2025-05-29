@@ -7,6 +7,7 @@ import { handleAuthError } from "../utils/AuthError";
 import { AddCommentForm } from "../components/AddCommentForm";
 import { Comment } from "../types/Comment";
 import FormatDuration from "../utils/FormatDuration";
+import { AddExerciseForm } from "../components/AddExerciseForm";
 
 export default function WorkoutDetails() {
     const { id } = useParams<{ id: string }>();
@@ -15,7 +16,6 @@ export default function WorkoutDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAddExercise, setShowAddExercise] = useState(false);
-    const [newExercise, setNewExercise] = useState<Partial<Exercise>>({});
     const [editExercise, setEditExercise] = useState<Exercise | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [comment, setComment] = useState<Comment[]>([]);
@@ -93,92 +93,6 @@ export default function WorkoutDetails() {
 
         fetchUsernames();
     }, [comment]);
-
-    const handleAddExercise = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newExercise.name) {
-            setError("Please enter a name all the fields.");
-            return;
-        }
-
-        if (!id || !token) return;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/exercise/add`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    workoutID: Number(id),
-                    name: newExercise.name,
-                    sets: newExercise.sets,
-                    reps: newExercise.reps,
-                    weight: newExercise.weight,
-                }),
-            });
-
-            if (await handleAuthError(response, setErrorMessage, `adding exercise`)) return;
-            if (!response.ok) {
-                throw new Error("Failed to add exercise");
-            }
-
-            const exerciseRes = await fetch(`${API_BASE_URL}/exercise/workout/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!exerciseRes.ok) {
-                throw new Error("Failed to fetch exercises");
-            }
-
-            const exerciseData: Exercise[] = await exerciseRes.json();
-            setExercises(exerciseData);
-            setShowAddExercise(false);
-            setNewExercise({});
-        } catch (err) {
-            console.error(err);
-            alert("Error adding exercise.");
-        }
-    };
-
-    const handleUpdateExercise = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editExercise || !editExercise.name || !editExercise.sets || !editExercise.reps || editExercise.weight === undefined) {
-            setError("Please provide all the fields.");
-            return;
-        }
-
-        if (!id || !token) return;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/exercise/update`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(editExercise),
-            });
-
-            if (await handleAuthError(response, setErrorMessage, `updating exercise`)) return;
-            if (!response.ok) {
-                throw new Error("Failed to update the exercise.");
-            }
-
-            setExercises((prevExercises) =>
-                prevExercises.map((exercise) =>
-                    exercise.exerciseID === editExercise.exerciseID
-                        ? { ...exercise, ...editExercise }
-                        : exercise
-                )
-            );
-
-            setEditExercise(null);
-        } catch (err) {
-            setError((err as Error).message);
-        }
-    };
 
     const handleComplete = async (completed: boolean) => {
         if (!token || !workout) {
@@ -361,53 +275,16 @@ export default function WorkoutDetails() {
                     {editExercise && (
                         <div className="modal d-block">
                             <div className="modal-dialog">
-                                <div className="modal-content bg-dark text-white p-4 rounded-3 shadow-lg">
-                                    <div className="modal-header border-bottom-0">
-                                        <h5 className="modal-title">Edit Exercise</h5>
-                                        <button type="button" className="btn-close btn-close-white" onClick={() => setEditExercise(null)}></button>
-                                    </div>
-                                    <div className="modal-body">
-                                        <form onSubmit={handleUpdateExercise}>
-                                            <div className="mb-3">
-                                                <label className="form-label">Name</label>
-                                                <input
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    required
-                                                    value={editExercise.name ?? ""}
-                                                    onChange={(e) => setEditExercise({ ...editExercise, name: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label className="form-label">Sets</label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    value={editExercise.sets ?? ""}
-                                                    onChange={(e) => setEditExercise({ ...editExercise, sets: Number(e.target.value) })}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label className="form-label">Reps</label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    value={editExercise.reps ?? ""}
-                                                    onChange={(e) => setEditExercise({ ...editExercise, reps: Number(e.target.value) })}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label className="form-label">Weight (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    value={editExercise.weight ?? ""}
-                                                    onChange={(e) => setEditExercise({ ...editExercise, weight: parseFloat(e.target.value) })}
-                                                />
-                                            </div>
-                                            <button type="submit" className="btn btn-primary w-100 rounded-2 py-2">Update</button>
-                                        </form>
-                                    </div>
-                                </div>
+                                <AddExerciseForm
+                                    workoutId={Number(id)}
+                                    initialData={editExercise}
+                                    onSubmit={(updatedExercise) => {
+                                        setExercises(prev => prev.map(ex =>
+                                            ex.exerciseID === updatedExercise.exerciseID ? updatedExercise : ex
+                                        ));
+                                    }}
+                                    onClose={() => setEditExercise(null)}
+                                />
                             </div>
                         </div>
                     )}
@@ -415,53 +292,14 @@ export default function WorkoutDetails() {
                     {showAddExercise && (
                         <div className="modal d-block">
                             <div className="modal-dialog">
-                                <div className="modal-content bg-dark text-white p-4 rounded-3 shadow-lg">
-                                    <div className="modal-header border-bottom-0">
-                                        <h5 className="modal-title">Add Exercise</h5>
-                                        <button type="button" className="btn-close btn-close-white" onClick={() => setShowAddExercise(false)}></button>
-                                    </div>
-                                    <div className="modal-body">
-                                        <form onSubmit={handleAddExercise}>
-                                            <div className="mb-3">
-                                                <label className="form-label">Name</label>
-                                                <input
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    required
-                                                    value={newExercise.name ?? ""}
-                                                    onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label className="form-label">Sets</label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    value={newExercise.sets ?? ""}
-                                                    onChange={(e) => setNewExercise({ ...newExercise, sets: Number(e.target.value) })}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label className="form-label">Reps</label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    value={newExercise.reps ?? ""}
-                                                    onChange={(e) => setNewExercise({ ...newExercise, reps: Number(e.target.value) })}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label className="form-label">Weight (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control bg-secondary text-white border-0 rounded-2"
-                                                    value={newExercise.weight ?? ""}
-                                                    onChange={(e) => setNewExercise({ ...newExercise, weight: parseFloat(e.target.value) })}
-                                                />
-                                            </div>
-                                            <button type="submit" className="btn btn-primary w-100 rounded-2 py-2">Add</button>
-                                        </form>
-                                    </div>
-                                </div>
+                                <AddExerciseForm
+                                    workoutId={Number(id)}
+                                    onSubmit={(newExercise) => {
+                                        setExercises(prev => [...prev, newExercise]);
+                                        setShowAddExercise(false);
+                                    }}
+                                    onClose={() => setShowAddExercise(false)}
+                                />
                             </div>
                         </div>
                     )}

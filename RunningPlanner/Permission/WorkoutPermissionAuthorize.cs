@@ -4,43 +4,22 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using RunningPlanner.Data;
 
-public class WorkoutPermissionAuthorize  : AuthorizeAttribute, IAsyncActionFilter
+public class WorkoutPermissionAuthorize : AuthorizeAttribute, IAsyncActionFilter
 {
     private readonly string[] _allowedPermissions;
 
-    public WorkoutPermissionAuthorize (params string[] allowedPermissions)
+    public WorkoutPermissionAuthorize(params string[] allowedPermissions)
     {
         _allowedPermissions = allowedPermissions;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var userIdClaim = context.HttpContext.User.FindFirst("UserID");
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        var userId = GetUserIdFromContext(context);
+        if (userId == null)
         {
             context.Result = new UnauthorizedResult();
             return;
-        }
-
-        int? workoutId = null;
-
-        if (context.ActionArguments.TryGetValue("id", out var routeIdObj) && routeIdObj is int routeId)
-        {
-            workoutId = routeId;
-        }
-        else
-        {
-            foreach (var arg in context.ActionArguments.Values)
-            {
-                if (arg == null) continue;
-
-                var prop = arg.GetType().GetProperty("WorkoutID");
-                if (prop != null && prop.GetValue(arg) is int bodyId)
-                {
-                    workoutId = bodyId;
-                    break;
-                }
-            }
         }
 
         var dbContext = context.HttpContext.RequestServices.GetService<RunningPlannerDbContext>();
@@ -50,32 +29,84 @@ public class WorkoutPermissionAuthorize  : AuthorizeAttribute, IAsyncActionFilte
             return;
         }
 
-        var workout = await dbContext.Workout.FirstOrDefaultAsync(r => r.WorkoutID == workoutId);
+        var workoutId = ResolveWorkoutId(context);
+        if (workoutId == null)
+        {
+            context.Result = new BadRequestObjectResult("Workout ID is missing.");
+            return;
+        }
+
+        var workout = await dbContext.Workout
+            .AsNoTracking()
+            .FirstOrDefaultAsync(w => w.WorkoutID == workoutId.Value);
+
         if (workout == null)
         {
             context.Result = new NotFoundObjectResult("Workout not found.");
             return;
         }
 
-        // Detach it to avoid tracking conflict
-        dbContext.Entry(workout).State = EntityState.Detached;
+        var (isUserFound, hasCorrectPermission) = await HasPermissionAsync(userId.Value, workout.TrainingPlanID, dbContext);
 
-
-        var userPermission = await dbContext.UserTrainingPlan
-            .FirstOrDefaultAsync(utp => utp.UserID == userId && utp.TrainingPlanID == workout.TrainingPlanID);
-
-        if (userPermission == null)
+        if (!isUserFound)
         {
             context.Result = new ForbidResult();
             return;
         }
 
-        if (!_allowedPermissions.Contains(userPermission.Permission, StringComparer.OrdinalIgnoreCase))
+        if (!hasCorrectPermission)
         {
-            context.Result = new UnauthorizedObjectResult(new { message = $"You do not have the required permissions. Required: {string.Join(", ", _allowedPermissions)}" });
+            context.Result = new UnauthorizedObjectResult(new
+            {
+                message = $"You do not have the required permissions. Required: {string.Join(", ", _allowedPermissions)}"
+            });
             return;
         }
 
         await next();
+    }
+
+    private int? GetUserIdFromContext(ActionExecutingContext context)
+    {
+        var userIdClaim = context.HttpContext.User.FindFirst("UserID");
+        return userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId)
+            ? userId
+            : null;
+    }
+
+    private int? ResolveWorkoutId(ActionExecutingContext context)
+    {
+        if (context.ActionArguments.TryGetValue("id", out var idObj) && idObj is int id)
+        {
+            return id;
+        }
+
+        foreach (var arg in context.ActionArguments.Values)
+        {
+            if (arg == null) continue;
+
+            var prop = arg.GetType().GetProperty("WorkoutID");
+            if (prop != null && prop.GetValue(arg) is int bodyId)
+            {
+                return bodyId;
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<(bool isUserFound, bool hasCorrectPermission)> HasPermissionAsync(int userId, int trainingPlanId, RunningPlannerDbContext dbContext)
+    {
+        var userPermission = await dbContext.UserTrainingPlan
+            .AsNoTracking()
+            .FirstOrDefaultAsync(up => up.UserID == userId && up.TrainingPlanID == trainingPlanId);
+
+        if (userPermission == null)
+        {
+            return (false, false);
+        }
+
+        var hasCorrectPermission = _allowedPermissions.Contains(userPermission.Permission, StringComparer.OrdinalIgnoreCase);
+        return (true, hasCorrectPermission);
     }
 }
