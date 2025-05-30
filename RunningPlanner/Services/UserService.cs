@@ -39,7 +39,8 @@ namespace RunningPlanner.Services
                 throw new ArgumentNullException(nameof(user), "User data is required.");
             }
 
-            user.UserName = InputSanitizer.Sanitize(user.UserName);
+            user.UserName = WebUtility.HtmlEncode(user.UserName);
+            user.Email = WebUtility.HtmlEncode(user.Email);
 
             if (string.IsNullOrEmpty(user.Password))
             {
@@ -66,8 +67,6 @@ namespace RunningPlanner.Services
             user.Password = _passwordHasher.HashPassword(user, user.Password);
 
             user.CreatedAt = DateTime.UtcNow;
-
-            user.Email = WebUtility.HtmlEncode(user.Email);
 
             return await _userRepository.AddUserAsync(user);
         }
@@ -132,7 +131,7 @@ namespace RunningPlanner.Services
             {
                 return (false, "User already has 'Owner' permission for this training plan.");
             }
-            
+
             permission = WebUtility.HtmlEncode(permission);
 
             return await _userRepository.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission.ToLower());
@@ -142,16 +141,6 @@ namespace RunningPlanner.Services
         public async Task<UserAdd?> GetUserIdByNameAsync(string username)
         {
             return await _userRepository.GetUserIdByUsernameAsync(username);
-        }
-    }
-
-    public static class InputSanitizer
-    {
-        public static string Sanitize(string input)
-        {
-            if (string.IsNullOrEmpty(input)) return input;
-
-            return HtmlEncoder.Default.Encode(input.Trim());
         }
     }
 }
