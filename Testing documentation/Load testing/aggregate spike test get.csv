@@ -1,0 +1,3 @@
+Label,# Samples,Average,Median,90% Line,95% Line,99% Line,Min,Max,Error %,Throughput,Received KB/sec,Sent KB/sec
+Get Request,500,435,159,1699,2070,2384,8,2657,"0,000%","84,45946","16,17","11,79"
+TOTAL,500,435,159,1699,2070,2384,8,2657,"0,000%","84,45946","16,17","11,79"

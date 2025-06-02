@@ -22,6 +22,10 @@ namespace RunningPlanner.Repositories
         public RunningRouteRepository(IMongoDatabase database)
         {
             _runningRoutes = database.GetCollection<RunningRoute>("RunningRoutes");
+
+            var keys = Builders<RunningRoute>.IndexKeys.Geo2DSphere("geometry");
+            var indexModel = new CreateIndexModel<RunningRoute>(keys);
+            _runningRoutes.Indexes.CreateOne(indexModel);
         }
 
         public async Task<List<RunningRoute>?> GetAllAsync()

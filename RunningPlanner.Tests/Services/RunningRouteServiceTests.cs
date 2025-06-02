@@ -117,5 +117,77 @@ namespace RunningPlanner.Tests
             _runRepoMock.Verify(r => r.RemoveRouteIdFromRunsAsync("id1"), Times.Once);
             _routeRepoMock.Verify(r => r.DeleteAsync("id1"), Times.Once);
         }
+
+        [Fact]
+        public async Task GetRoutesNearPointAsync_CallsRepositoryAndReturnsData()
+        {
+            var expectedRoutes = new List<RunningRoute>
+            {
+                new() { Name = "Nearby Route" }
+            };
+
+            _routeRepoMock.Setup(r => r.FindRoutesNearPointAsync(12.5, 55.6, 100))
+                     .ReturnsAsync(expectedRoutes);
+
+            var result = await _service.GetRoutesNearPointAsync(12.5, 55.6, 100);
+
+            Assert.Equal(expectedRoutes, result);
+            _routeRepoMock.Verify(r => r.FindRoutesNearPointAsync(12.5, 55.6, 100), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRoutesWithinPolygonAsync_CallsRepositoryAndReturnsData()
+        {
+            var polygon = new Polygon
+            {
+                Coordinates = new List<List<double>>
+                {
+                    new() { 12.4, 55.6 },
+                    new() { 12.6, 55.6 },
+                    new() { 12.6, 55.8 },
+                    new() { 12.4, 55.8 },
+                    new() { 12.4, 55.6 }
+                }
+            };
+
+            var expectedRoutes = new List<RunningRoute>
+            {
+                new() { Name = "Inside Polygon" }
+            };
+
+            _routeRepoMock.Setup(r => r.GetRoutesWithinPolygonAsync(polygon.Coordinates))
+                     .ReturnsAsync(expectedRoutes);
+
+            var result = await _service.GetRoutesWithinPolygonAsync(polygon);
+
+            Assert.Equal(expectedRoutes, result);
+            _routeRepoMock.Verify(r => r.GetRoutesWithinPolygonAsync(polygon.Coordinates), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRoutesIntersectingPolygonAsync_CallsRepositoryAndReturnsData()
+        {
+            var polygonCoordinates = new List<List<double>>
+            {
+                new() { 12.4, 55.6 },
+                new() { 12.6, 55.6 },
+                new() { 12.6, 55.8 },
+                new() { 12.4, 55.8 },
+                new() { 12.4, 55.6 }
+            };
+
+            var expectedRoutes = new List<RunningRoute>
+            {
+                new() { Name = "Intersecting Route" }
+            };
+
+            _routeRepoMock.Setup(r => r.GetRoutesGeoIntersectsAsync(polygonCoordinates))
+                     .ReturnsAsync(expectedRoutes);
+
+            var result = await _service.GetRoutesIntersectingPolygonAsync(polygonCoordinates);
+
+            Assert.Equal(expectedRoutes, result);
+            _routeRepoMock.Verify(r => r.GetRoutesGeoIntersectsAsync(polygonCoordinates), Times.Once);
+        }
     }
 }

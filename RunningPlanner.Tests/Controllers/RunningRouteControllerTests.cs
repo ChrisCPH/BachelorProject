@@ -154,7 +154,7 @@ namespace RunningPlanner.Tests
                 .ThrowsAsync(new KeyNotFoundException());
 
             var result = await _controller.Update(route);
-            
+
             Assert.IsType<NotFoundResult>(result);
         }
 
@@ -176,6 +176,141 @@ namespace RunningPlanner.Tests
             var result = await _controller.Delete("missing");
 
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task GetRoutesNearPoint_ReturnsOk_WhenPointIsValid()
+        {
+            var point = new GeoPoint { Longitude = 12.5, Latitude = 55.6, MaxDistanceMeters = 500 };
+            var expectedRoutes = new List<RunningRoute> { new() { Name = "Nearby Route" } };
+
+            _serviceMock.Setup(s => s.GetRoutesNearPointAsync(point.Longitude, point.Latitude, point.MaxDistanceMeters))
+                        .ReturnsAsync(expectedRoutes);
+
+            var result = await _controller.GetRoutesNearPoint(point);
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal(expectedRoutes, ok.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesNearPoint_ReturnsBadRequest_WhenPointIsNull()
+        {
+            var result = await _controller.GetRoutesNearPoint(null!);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Point data is required.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesWithinPolygon_ReturnsOk_WhenPolygonIsValid()
+        {
+            var polygon = new Polygon
+            {
+                Coordinates = new List<List<double>> {
+                    new() { 0, 0 },
+                    new() { 0, 1 },
+                    new() { 1, 0 }
+                }
+            };
+
+            var expectedRoutes = new List<RunningRoute> { new() { Name = "Inside Polygon" } };
+
+            _serviceMock.Setup(s => s.GetRoutesWithinPolygonAsync(polygon))
+                        .ReturnsAsync(expectedRoutes);
+
+            var result = await _controller.GetRoutesWithinPolygon(polygon);
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal(expectedRoutes, ok.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesWithinPolygon_ReturnsBadRequest_WhenPolygonIsNull()
+        {
+            var result = await _controller.GetRoutesWithinPolygon(null!);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("A valid polygon with at least 3 coordinates is required.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesWithinPolygon_ReturnsBadRequest_WhenTooFewCoordinates()
+        {
+            var polygon = new Polygon
+            {
+                Coordinates = new List<List<double>> {
+                    new() { 0, 0 },
+                    new() { 1, 1 }
+                }
+            };
+
+            var result = await _controller.GetRoutesWithinPolygon(polygon);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("A valid polygon with at least 3 coordinates is required.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesIntersectingPolygon_ReturnsOk_WhenValidPolygon()
+        {
+            var polygon = new Polygon
+            {
+                Coordinates = new List<List<double>> {
+                    new() { 0, 0 },
+                    new() { 0, 1 },
+                    new() { 1, 1 },
+                    new() { 0, 0 }
+                }
+            };
+
+            var expectedRoutes = new List<RunningRoute> { new() { Name = "Crossing Route" } };
+
+            _serviceMock.Setup(s => s.GetRoutesIntersectingPolygonAsync(polygon.Coordinates))
+                        .ReturnsAsync(expectedRoutes);
+
+            var result = await _controller.GetRoutesIntersectingPolygon(polygon);
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal(expectedRoutes, ok.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesIntersectingPolygon_ReturnsBadRequest_WhenPolygonIsNull()
+        {
+            var result = await _controller.GetRoutesIntersectingPolygon(null!);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Polygon coordinates must have at least 4 points (including closing point).", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesIntersectingPolygon_ReturnsBadRequest_WhenCoordinatesAreNull()
+        {
+            var polygon = new Polygon { Coordinates = null! };
+
+            var result = await _controller.GetRoutesIntersectingPolygon(polygon);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Polygon coordinates must have at least 4 points (including closing point).", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetRoutesIntersectingPolygon_ReturnsBadRequest_WhenTooFewPoints()
+        {
+            var polygon = new Polygon
+            {
+                Coordinates = new List<List<double>> {
+                    new() { 0, 0 },
+                    new() { 1, 1 },
+                    new() { 1, 0 }
+                }
+            };
+
+            var result = await _controller.GetRoutesIntersectingPolygon(polygon);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Polygon coordinates must have at least 4 points (including closing point).", badRequest.Value);
         }
     }
 }
