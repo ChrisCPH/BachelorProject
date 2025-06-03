@@ -8,12 +8,14 @@ namespace RunningPlanner.Tests.Services
     public class TrainingPlanServiceTests
     {
         private readonly Mock<ITrainingPlanRepository> _trainingPlanRepositoryMock;
+        private readonly Mock<IUserTrainingPlanRepository> _userTrainingPlanRepositoryMock;
         private readonly TrainingPlanService _trainingPlanService;
 
         public TrainingPlanServiceTests()
         {
             _trainingPlanRepositoryMock = new Mock<ITrainingPlanRepository>();
-            _trainingPlanService = new TrainingPlanService(_trainingPlanRepositoryMock.Object);
+            _userTrainingPlanRepositoryMock = new Mock<IUserTrainingPlanRepository>();
+            _trainingPlanService = new TrainingPlanService(_trainingPlanRepositoryMock.Object, _userTrainingPlanRepositoryMock.Object);
         }
 
         [Fact]
@@ -21,12 +23,32 @@ namespace RunningPlanner.Tests.Services
         {
             var trainingPlan = new TrainingPlan { TrainingPlanID = 1 };
             int userId = 1;
-            _trainingPlanRepositoryMock.Setup(repo => repo.AddTrainingPlanAsync(trainingPlan, userId)).ReturnsAsync(trainingPlan);
+
+            _trainingPlanRepositoryMock
+                .Setup(repo => repo.AddTrainingPlanAsync(It.IsAny<TrainingPlan>()))
+                .ReturnsAsync(trainingPlan);
+
+            _userTrainingPlanRepositoryMock
+                .Setup(repo => repo.AddUserTrainingPlanAsync(It.IsAny<UserTrainingPlan>()))
+                .ReturnsAsync(new UserTrainingPlan
+                {
+                    UserID = userId,
+                    TrainingPlanID = trainingPlan.TrainingPlanID,
+                    Permission = "owner"
+                });
 
             var result = await _trainingPlanService.CreateTrainingPlanAsync(trainingPlan, userId);
 
             Assert.Equal(trainingPlan, result);
-            _trainingPlanRepositoryMock.Verify(repo => repo.AddTrainingPlanAsync(trainingPlan, userId), Times.Once);
+
+            _trainingPlanRepositoryMock.Verify(repo => repo.AddTrainingPlanAsync(trainingPlan), Times.Once);
+
+            _userTrainingPlanRepositoryMock.Verify(repo => repo.AddUserTrainingPlanAsync(
+                It.Is<UserTrainingPlan>(utp =>
+                    utp.UserID == userId &&
+                    utp.TrainingPlanID == trainingPlan.TrainingPlanID &&
+                    utp.Permission == "owner"
+                )), Times.Once);
         }
 
         [Fact]

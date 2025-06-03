@@ -1,3 +1,4 @@
+using System.Net;
 using Moq;
 using RunningPlanner.Models;
 using RunningPlanner.Repositories;
@@ -19,19 +20,43 @@ namespace RunningPlanner.Tests.Services
         [Fact]
         public async Task CreateCommentAsync_ShouldReturnCreatedComment_WhenCommentIsValid()
         {
-            var comment = new Comment { CommentID = 1 };
-            _commentRepositoryMock.Setup(repo => repo.AddCommentAsync(comment)).ReturnsAsync(comment);
+            var userId = 123;
+            var comment = new Comment
+            {
+                CommentID = 1,
+                RunID = 10,
+                Text = "Test comment"
+            };
 
-            var result = await _commentService.CreateCommentAsync(comment);
+            _commentRepositoryMock
+                .Setup(repo => repo.AddCommentAsync(It.Is<Comment>(c => c.UserID == userId)))
+                .ReturnsAsync((Comment c) => c);
 
-            Assert.Equal(comment, result);
-            _commentRepositoryMock.Verify(repo => repo.AddCommentAsync(comment), Times.Once);
+            var result = await _commentService.CreateCommentAsync(comment, userId);
+
+            Assert.Equal(userId, result.UserID);
+            Assert.Equal(WebUtility.HtmlEncode(comment.Text), result.Text);
         }
 
         [Fact]
         public async Task CreateCommentAsync_ShouldThrowArgumentNullException_WhenCommentIsNull()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _commentService.CreateCommentAsync(null!));
+            var userId = 123;
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _commentService.CreateCommentAsync(null!, userId));
+        }
+
+        [Fact]
+        public async Task CreateCommentAsync_ShouldThrowArgumentException_WhenNeitherRunIdNorWorkoutIdIsSet()
+        {
+            var userId = 123;
+            var comment = new Comment
+            {
+                Text = "Test",
+                RunID = null,
+                WorkoutID = null
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _commentService.CreateCommentAsync(comment, userId));
         }
 
         [Fact]
@@ -75,19 +100,63 @@ namespace RunningPlanner.Tests.Services
         [Fact]
         public async Task UpdateCommentAsync_ShouldReturnUpdatedComment_WhenCommentIsValid()
         {
-            var comment = new Comment { CommentID = 1 };
-            _commentRepositoryMock.Setup(repo => repo.UpdateCommentAsync(comment)).ReturnsAsync(comment);
+            int userId = 123;
+            var comment = new Comment
+            {
+                CommentID = 1,
+                Text = "Updated Text",
+                RunID = 10,
+                WorkoutID = 5,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            var result = await _commentService.UpdateCommentAsync(comment);
+            var existingComment = new Comment
+            {
+                CommentID = 1,
+                UserID = userId,
+                Text = "Old Text",
+                RunID = 10,
+                WorkoutID = 5,
+                CreatedAt = DateTime.UtcNow.AddDays(-1)
+            };
 
-            Assert.Equal(comment, result);
-            _commentRepositoryMock.Verify(repo => repo.UpdateCommentAsync(comment), Times.Once);
+            _commentRepositoryMock
+                .Setup(repo => repo.GetCommentByIdAsync(comment.CommentID))
+                .ReturnsAsync(existingComment);
+
+            _commentRepositoryMock
+                .Setup(repo => repo.UpdateCommentAsync(It.IsAny<Comment>()))
+                .ReturnsAsync((Comment c) => c);
+
+            var result = await _commentService.UpdateCommentAsync(comment, userId);
+
+            Assert.Equal(WebUtility.HtmlEncode(comment.Text), result.Text);
+            Assert.Equal(comment.RunID, result.RunID);
+            Assert.Equal(comment.WorkoutID, result.WorkoutID);
+            Assert.Equal(comment.CreatedAt, result.CreatedAt);
+
+            _commentRepositoryMock.Verify(repo => repo.GetCommentByIdAsync(comment.CommentID), Times.Once);
+            _commentRepositoryMock.Verify(repo => repo.UpdateCommentAsync(It.IsAny<Comment>()), Times.Once);
         }
 
         [Fact]
         public async Task UpdateCommentAsync_ShouldThrowArgumentNullException_WhenCommentIsNull()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _commentService.UpdateCommentAsync(null!));
+            int userId = 123;
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _commentService.UpdateCommentAsync(null!, userId));
+        }
+
+        [Fact]
+        public async Task UpdateCommentAsync_ShouldThrowKeyNotFoundException_WhenCommentDoesNotExist()
+        {
+            int userId = 123;
+            var comment = new Comment { CommentID = 1 };
+
+            _commentRepositoryMock
+                .Setup(repo => repo.GetCommentByIdAsync(comment.CommentID))
+                .ReturnsAsync((Comment?)null);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _commentService.UpdateCommentAsync(comment, userId));
         }
 
         [Fact]

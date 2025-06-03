@@ -22,29 +22,27 @@ namespace RunningPlanner.Controllers
         public async Task<IActionResult> CreateComment([FromBody] Comment comment)
         {
             if (comment == null)
-            {
                 return BadRequest("Comment data is required.");
-            }
 
             var userIdClaim = User.FindFirst("UserID");
             if (userIdClaim == null)
-            {
                 return Unauthorized("User ID not found in token.");
-            }
 
             int userId = int.Parse(userIdClaim.Value);
 
-            var commentWithUserId = new Comment
+            try
             {
-                UserID = userId,
-                RunID = comment.RunID,
-                WorkoutID = comment.WorkoutID,
-                Text = comment.Text,
-                CreatedAt = comment.CreatedAt
-            };
-
-            var createdComment = await _commentService.CreateCommentAsync(commentWithUserId);
-            return CreatedAtAction(nameof(GetCommentById), new { id = createdComment.CommentID }, createdComment);
+                var createdComment = await _commentService.CreateCommentAsync(comment, userId);
+                return CreatedAtAction(nameof(GetCommentById), new { id = createdComment.CommentID }, createdComment);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
@@ -88,35 +86,20 @@ namespace RunningPlanner.Controllers
         public async Task<IActionResult> UpdateComment([FromBody] Comment comment)
         {
             if (comment == null)
-            {
                 return BadRequest("Comment data is required.");
-            }
 
             var userIdClaim = User.FindFirst("UserID");
             if (userIdClaim == null)
-            {
                 return Unauthorized("User ID not found in token.");
-            }
 
             int userId = int.Parse(userIdClaim.Value);
 
-            var commentWithUserId = new Comment
-            {
-                CommentID = comment.CommentID,
-                UserID = userId,
-                RunID = comment.RunID,
-                WorkoutID = comment.WorkoutID,
-                Text = comment.Text,
-                CreatedAt = comment.CreatedAt
-            };
+            var result = await _commentService.UpdateCommentAsync(comment, userId);
 
-            var updatedComment = await _commentService.UpdateCommentAsync(commentWithUserId);
-            if (updatedComment == null)
-            {
+            if (result == null)
                 return NotFound("Comment not found.");
-            }
 
-            return Ok(updatedComment);
+            return Ok(result);
         }
 
         [HttpDelete("delete/{id}")]

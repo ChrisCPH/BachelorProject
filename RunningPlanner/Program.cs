@@ -23,6 +23,7 @@ builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IRunningRouteRepository, RunningRouteRepository>();
+builder.Services.AddScoped<IUserTrainingPlanRepository, UserTrainingPlanRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRunService, RunService>();

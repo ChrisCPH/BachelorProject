@@ -6,7 +6,7 @@ namespace RunningPlanner.Repositories
 {
     public interface ITrainingPlanRepository
     {
-        Task<TrainingPlan> AddTrainingPlanAsync(TrainingPlan trainingPlan, int userId);
+        Task<TrainingPlan> AddTrainingPlanAsync(TrainingPlan trainingPlan);
         Task<TrainingPlan?> GetTrainingPlanByIdAsync(int trainingPlanId);
         Task<List<TrainingPlan>?> GetAllTrainingPlansByUserAsync(int userId);
         Task<List<TrainingPlanWithPermission>?> GetAllTrainingPlansWithPermissionsByUserAsync(int userId);
@@ -24,24 +24,12 @@ namespace RunningPlanner.Repositories
             _context = context;
         }
 
-        public async Task<TrainingPlan> AddTrainingPlanAsync(TrainingPlan trainingPlan, int userId)
+        public async Task<TrainingPlan> AddTrainingPlanAsync(TrainingPlan trainingPlan)
         {
             await _context.TrainingPlan.AddAsync(trainingPlan);
             await _context.SaveChangesAsync();
-
-            var userTrainingPlan = new UserTrainingPlan
-            {
-                UserID = userId,
-                TrainingPlanID = trainingPlan.TrainingPlanID,
-                Permission = "owner"
-            };
-
-            await _context.UserTrainingPlan.AddAsync(userTrainingPlan);
-            await _context.SaveChangesAsync();
-
             return trainingPlan;
         }
-
 
         public async Task<TrainingPlan?> GetTrainingPlanByIdAsync(int trainingPlanId)
         {

@@ -17,10 +17,12 @@ namespace RunningPlanner.Services
     public class TrainingPlanService : ITrainingPlanService
     {
         private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly IUserTrainingPlanRepository _userTrainingPlanRepository;
 
-        public TrainingPlanService(ITrainingPlanRepository trainingPlanRepository)
+        public TrainingPlanService(ITrainingPlanRepository trainingPlanRepository, IUserTrainingPlanRepository userTrainingPlanRepository)
         {
             _trainingPlanRepository = trainingPlanRepository;
+            _userTrainingPlanRepository = userTrainingPlanRepository;
         }
 
         public async Task<TrainingPlan> CreateTrainingPlanAsync(TrainingPlan trainingPlan, int userId)
@@ -34,7 +36,18 @@ namespace RunningPlanner.Services
             trainingPlan.Event = WebUtility.HtmlEncode(trainingPlan.Event);
             trainingPlan.GoalTime = WebUtility.HtmlEncode(trainingPlan.GoalTime);
 
-            return await _trainingPlanRepository.AddTrainingPlanAsync(trainingPlan, userId);
+            var savedPlan = await _trainingPlanRepository.AddTrainingPlanAsync(trainingPlan);
+
+            var userTrainingPlan = new UserTrainingPlan
+            {
+                UserID = userId,
+                TrainingPlanID = savedPlan.TrainingPlanID,
+                Permission = "owner"
+            };
+
+            await _userTrainingPlanRepository.AddUserTrainingPlanAsync(userTrainingPlan);
+
+            return savedPlan;
         }
 
         public async Task<TrainingPlan?> GetTrainingPlanByIdAsync(int trainingPlanId)

@@ -460,7 +460,7 @@ namespace RunningPlanner.Tests
             Assert.Equal(2, created.Geometry.Coordinates.Count);
             Assert.Equal(5.2, created.DistanceKm);
         }
-        
+
         public int ExtractUserIdFromToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -520,6 +520,7 @@ namespace RunningPlanner.Tests
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             var message = await response.Content.ReadAsStringAsync();
+
             Assert.Contains("invalid permission", message.ToLower());
         }
 
@@ -539,7 +540,11 @@ namespace RunningPlanner.Tests
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Contains("user or training plan not found.", message.ToLower());
+
+            Assert.True(
+                message.ToLower().Contains("user not found") ||
+                message.ToLower().Contains("training plan not found")
+            );
         }
 
         // Test for user story 10 (create comment user story)

@@ -6,22 +6,23 @@ namespace RunningPlanner.Tests
     public class TrainingPlanRepositoryTests : TestBase
     {
         [Fact]
-        public async Task AddTrainingPlanAsync_ShouldAddTrainingPlan_AndLinkToUser()
+        public async Task AddTrainingPlanAsync_ShouldAddTrainingPlan()
         {
             var context = GetInMemoryDbContext();
             var repo = new TrainingPlanRepository(context);
 
-            var user = new User { UserID = 1, Email = "test@run.com" };
-            context.User.Add(user);
-            await context.SaveChangesAsync();
+            var plan = new TrainingPlan
+            {
+                Name = "Marathon Prep",
+                Event = "Marathon",
+                GoalTime = "3:30"
+            };
 
-            var plan = new TrainingPlan { Name = "Marathon Prep" };
-            var result = await repo.AddTrainingPlanAsync(plan, user.UserID);
+            var result = await repo.AddTrainingPlanAsync(plan);
 
             Assert.NotNull(result);
             Assert.Equal("Marathon Prep", result.Name);
             Assert.Single(context.TrainingPlan);
-            Assert.Single(context.UserTrainingPlan);
         }
 
         [Fact]

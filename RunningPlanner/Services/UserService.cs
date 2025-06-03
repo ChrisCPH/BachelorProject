@@ -22,12 +22,16 @@ namespace RunningPlanner.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly IUserTrainingPlanRepository _userTrainingPlanRepository;
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly IConfiguration _configuration;
 
-        public UserService(IUserRepository userRepository, IConfiguration configuration)
+        public UserService(IUserRepository userRepository, ITrainingPlanRepository trainingPlanRepository, IUserTrainingPlanRepository userTrainingPlanRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
+            _trainingPlanRepository = trainingPlanRepository;
+            _userTrainingPlanRepository = userTrainingPlanRepository;
             _passwordHasher = new PasswordHasher<User>();
             _configuration = configuration;
         }
@@ -120,23 +124,44 @@ namespace RunningPlanner.Services
 
         public async Task<(bool Success, string Message)> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission)
         {
-            var validPermissions = new[] { "editor", "commenter", "viewer" };
-            if (!validPermissions.Contains(permission.ToLower()))
+            var validPermissions = new[] { "Owner", "Editor", "Commenter", "Viewer" };
+            var matchedPermission = validPermissions
+                .FirstOrDefault(p => p.Equals(permission, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedPermission == null)
+                return (false, "Invalid permission.");
+
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "User not found.");
+
+            var plan = await _trainingPlanRepository.GetTrainingPlanByIdAsync(trainingPlanId);
+            if (plan == null)
+                return (false, "Training plan not found.");
+
+            var existingLink = await _userTrainingPlanRepository.GetUserTrainingPlanAsync(userId, trainingPlanId);
+
+            if (existingLink != null)
             {
-                return (false, "Invalid permission. Must be one of: editor, commenter, viewer.");
-            }
+                if (existingLink.Permission.Equals("Owner", StringComparison.OrdinalIgnoreCase))
+                    return (false, "User already has Owner permission.");
 
-            var existingUserTrainingPlan = await _userRepository.GetUserPermission(userId, trainingPlanId);
-            if (existingUserTrainingPlan != null && existingUserTrainingPlan == "owner")
+                existingLink.Permission = matchedPermission;
+                await _userTrainingPlanRepository.UpdateUserTrainingPlanAsync(existingLink);
+                return (true, "Permission updated.");
+            }
+            else
             {
-                return (false, "User already has 'Owner' permission for this training plan.");
+                var newLink = new UserTrainingPlan
+                {
+                    UserID = userId,
+                    TrainingPlanID = trainingPlanId,
+                    Permission = matchedPermission
+                };
+                await _userTrainingPlanRepository.AddUserTrainingPlanAsync(newLink);
+                return (true, "User added to training plan.");
             }
-
-            permission = WebUtility.HtmlEncode(permission);
-
-            return await _userRepository.AddUserToTrainingPlanAsync(userId, trainingPlanId, permission.ToLower());
         }
-
 
         public async Task<UserAdd?> GetUserIdByNameAsync(string username)
         {

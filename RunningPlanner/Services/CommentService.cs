@@ -6,11 +6,11 @@ namespace RunningPlanner.Services
 {
     public interface ICommentService
     {
-        Task<Comment> CreateCommentAsync(Comment comment);
+        Task<Comment> CreateCommentAsync(Comment comment, int userId);
         Task<Comment?> GetCommentByIdAsync(int commentId);
         Task<List<Comment>?> GetAllCommentsByRunAsync(int runId);
         Task<List<Comment>?> GetAllCommentsByWorkoutAsync(int runId);
-        Task<Comment> UpdateCommentAsync(Comment comment);
+        Task<Comment> UpdateCommentAsync(Comment comment, int userId);
         Task<bool> DeleteCommentAsync(int commentId);
     }
 
@@ -23,13 +23,15 @@ namespace RunningPlanner.Services
             _commentRepository = commentRepository;
         }
 
-        public async Task<Comment> CreateCommentAsync(Comment comment)
+        public async Task<Comment> CreateCommentAsync(Comment comment, int userId)
         {
             if (comment == null)
-            {
                 throw new ArgumentNullException(nameof(comment), "Comment data is required.");
-            }
 
+            if (comment.RunID == null && comment.WorkoutID == null)
+                throw new ArgumentException("Comment must be associated with either a Run or a Workout.");
+
+            comment.UserID = userId;
             comment.Text = WebUtility.HtmlEncode(comment.Text);
 
             return await _commentRepository.AddCommentAsync(comment);
@@ -50,16 +52,21 @@ namespace RunningPlanner.Services
             return await _commentRepository.GetAllCommentsByWorkoutAsync(workoutId);
         }
 
-        public async Task<Comment> UpdateCommentAsync(Comment comment)
+        public async Task<Comment> UpdateCommentAsync(Comment comment, int userId)
         {
             if (comment == null)
-            {
                 throw new ArgumentNullException(nameof(comment), "Comment data is required.");
-            }
 
-            comment.Text = WebUtility.HtmlEncode(comment.Text);
+            var existing = await _commentRepository.GetCommentByIdAsync(comment.CommentID);
+            if (existing == null)
+                throw new KeyNotFoundException("Comment not found.");
 
-            return await _commentRepository.UpdateCommentAsync(comment);
+            existing.Text = WebUtility.HtmlEncode(comment.Text);
+            existing.RunID = comment.RunID;
+            existing.WorkoutID = comment.WorkoutID;
+            existing.CreatedAt = comment.CreatedAt;
+
+            return await _commentRepository.UpdateCommentAsync(existing);
         }
 
         public async Task<bool> DeleteCommentAsync(int commentId)
