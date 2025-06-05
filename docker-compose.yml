@@ -1,0 +1,77 @@
+version: "3.9"
+services:
+  backend:
+    build:
+      context: ./RunningPlanner
+      dockerfile: Dockerfile
+    ports:
+      - "5015:5015"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=RunningDB;User Id=sa;Password=Password123;TrustServerCertificate=True;
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=RunningPlannerDB
+      - Jwt__Key=ThisIsA32CharacterSecretKey!1234
+      - Jwt__Issuer=RunningPlanner
+      - Jwt__Audience=RunningPlannerUsers
+      - Jwt__ExpiresInMinutes=60
+    depends_on:
+      - sqlserver
+      - mongodb
+    networks:
+      - planner-net
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./running-planner-frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5015/api
+    networks:
+      - planner-net
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Password123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./sqlserver/backup:/backup 
+      - ./sql-backups:/var/opt/mssql/backup
+    networks:
+      - planner-net
+
+  sqlserver-restore:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - sqlserver
+    volumes:
+      - ./sqlserver/backup:/backup
+      - ./sqlserver/restore-db.sh:/restore-db.sh
+    entrypoint: ["/bin/bash", "/restore-db.sh"]
+    networks:
+      - planner-net
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - planner-net
+
+volumes:
+  mongo-data:
+
+networks:
+  planner-net:

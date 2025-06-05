@@ -101,6 +101,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.Urls.Clear();
+app.Urls.Add("http://0.0.0.0:5015"); // For Docker
 app.Run();
 
 public partial class Program { } //For WebApplicationFactory tests
