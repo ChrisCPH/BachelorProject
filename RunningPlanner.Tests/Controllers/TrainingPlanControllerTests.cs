@@ -179,7 +179,7 @@ namespace RunningPlanner.Tests.Controllers
             var userId = 1;
             var trainingPlans = new List<TrainingPlanWithPermission>
             {
-                new TrainingPlanWithPermission { TrainingPlanID = 1, Permission = "Owner" }
+                new TrainingPlanWithPermission { TrainingPlanID = 1, Permission = "owner" }
             };
 
             _trainingPlanServiceMock

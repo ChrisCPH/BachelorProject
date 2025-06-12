@@ -16,7 +16,7 @@ namespace RunningPlanner.Tests
             {
                 UserID = 1,
                 TrainingPlanID = 2,
-                Permission = "Owner"
+                Permission = "owner"
             };
             context.UserTrainingPlan.Add(userTrainingPlan);
             await context.SaveChangesAsync();
@@ -26,7 +26,7 @@ namespace RunningPlanner.Tests
             Assert.NotNull(result);
             Assert.Equal(1, result.UserID);
             Assert.Equal(2, result.TrainingPlanID);
-            Assert.Equal("Owner", result.Permission);
+            Assert.Equal("owner", result.Permission);
         }
 
         [Fact]
@@ -46,13 +46,13 @@ namespace RunningPlanner.Tests
             {
                 UserID = user.UserID,
                 TrainingPlanID = plan.TrainingPlanID,
-                Permission = "Owner"
+                Permission = "owner"
             };
 
             var result = await repo.AddUserTrainingPlanAsync(userTrainingPlan);
 
             Assert.NotNull(result);
-            Assert.Equal("Owner", result.Permission);
+            Assert.Equal("owner", result.Permission);
             Assert.Single(context.UserTrainingPlan);
         }
 
@@ -66,12 +66,12 @@ namespace RunningPlanner.Tests
             {
                 UserID = 3,
                 TrainingPlanID = 4,
-                Permission = "Viewer"
+                Permission = "viewer"
             };
             context.UserTrainingPlan.Add(userTrainingPlan);
             await context.SaveChangesAsync();
 
-            userTrainingPlan.Permission = "Editor";
+            userTrainingPlan.Permission = "editor";
 
             var updatedPlan = await repo.UpdateUserTrainingPlanAsync(userTrainingPlan);
 
@@ -80,8 +80,8 @@ namespace RunningPlanner.Tests
                     utp.UserID == userTrainingPlan.UserID &&
                     utp.TrainingPlanID == userTrainingPlan.TrainingPlanID);
 
-            Assert.Equal("Editor", updatedPlan.Permission);
-            Assert.Equal("Editor", dbEntry!.Permission);
+            Assert.Equal("editor", updatedPlan.Permission);
+            Assert.Equal("editor", dbEntry!.Permission);
         }
 
     }

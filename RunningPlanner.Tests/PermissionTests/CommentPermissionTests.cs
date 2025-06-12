@@ -54,7 +54,7 @@ public class CommentPermissionTests
     public async Task ReturnsUnauthorized_If_UserIdMissing()
     {
         var dbContext = DbContextFactory.CreateInMemoryContext();
-        var filter = new CommentPermissionAuthorize("Editor");
+        var filter = new CommentPermissionAuthorize("editor");
 
         var context = new ActionExecutingContext(
             new ActionContext(new DefaultHttpContext(), new Microsoft.AspNetCore.Routing.RouteData(), new ControllerActionDescriptor()),
@@ -71,7 +71,7 @@ public class CommentPermissionTests
     public async Task ReturnsNotFound_If_CommentNotFound()
     {
         var dbContext = DbContextFactory.CreateInMemoryContext();
-        var filter = new CommentPermissionAuthorize("Editor");
+        var filter = new CommentPermissionAuthorize("editor");
 
         var context = GetContext(dbContext, userId: 10, new Dictionary<string, object> { { "id", 999 } });
 
@@ -87,7 +87,7 @@ public class CommentPermissionTests
         dbContext.Comment.Add(new Comment { CommentID = 10 });
         dbContext.SaveChanges();
 
-        var filter = new CommentPermissionAuthorize("Editor");
+        var filter = new CommentPermissionAuthorize("editor");
         var context = GetContext(dbContext, userId: 1, new Dictionary<string, object> { { "id", 10 } });
 
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
@@ -98,13 +98,13 @@ public class CommentPermissionTests
     [Fact]
     public async Task ReturnsForbid_WhenUserHasNoTrainingPlanEntry()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         db.UserTrainingPlan.RemoveRange(db.UserTrainingPlan);
         db.SaveChanges();
 
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new CommentPermissionAuthorize("Editor");
+        var filter = new CommentPermissionAuthorize("editor");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<ForbidResult>(context.Result);
@@ -113,27 +113,27 @@ public class CommentPermissionTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserHasWrongPermission()
     {
-        var db = GetDbContextWithData("Viewer");
+        var db = GetDbContextWithData("viewer");
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new CommentPermissionAuthorize("Owner");
+        var filter = new CommentPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         var result = Assert.IsType<UnauthorizedObjectResult>(context.Result);
         var message = result.Value!.ToString()!;
         Assert.Contains("required permissions", message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Owner", message);
+        Assert.Contains("owner", message);
     }
 
     [Theory]
-    [InlineData("Owner")]
-    [InlineData("Editor")]
-    [InlineData("Commenter")]
+    [InlineData("owner")]
+    [InlineData("editor")]
+    [InlineData("commenter")]
     public async Task AllowsExecution_WhenPermissionIsValid(string validPermission)
     {
         var dbContext = GetDbContextWithData(validPermission);
 
-        var filter = new CommentPermissionAuthorize("Owner", "Editor", "Commenter");
+        var filter = new CommentPermissionAuthorize("owner", "editor", "commenter");
         var context = GetContext(dbContext, userId: 123, new Dictionary<string, object> { { "id", 10 } });
 
         bool nextCalled = false;
@@ -150,12 +150,12 @@ public class CommentPermissionTests
     [Fact]
     public async Task ResolvesCommentId_FromCommentObjectDirectly()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var comment = db.Comment.First();
 
         var context = GetContext(db, 123, new() { { "model", comment } });
 
-        var filter = new CommentPermissionAuthorize("Owner");
+        var filter = new CommentPermissionAuthorize("owner");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>

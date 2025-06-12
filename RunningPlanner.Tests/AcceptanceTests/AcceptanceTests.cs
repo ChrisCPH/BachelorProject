@@ -480,7 +480,7 @@ namespace RunningPlanner.Tests
 
             var trainingPlanId = await CreateTrainingPlanForAuthorizedUserAsync();
 
-            var otherUser = new { Email = "viewer@example.com", Password = "Viewer123!", UserName = "viewer" };
+            var otherUser = new { Email = "viewer@example.com", Password = "viewer123!", UserName = "viewer" };
             await _client.PostAsJsonAsync("api/user/register", otherUser);
 
             var loginResponse = await _client.PostAsJsonAsync("api/user/login", new { otherUser.Email, otherUser.Password });

@@ -72,10 +72,10 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserMissing()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var context = GetContext(db, null, new() { { "id", 10 } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<UnauthorizedResult>(context.Result);
@@ -84,10 +84,10 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ReturnsBadRequest_WhenFeedbackIdMissing()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var context = GetContext(db, 123, new());
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<BadRequestObjectResult>(context.Result);
@@ -96,10 +96,10 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ReturnsNotFound_WhenFeedbackNotFound()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var context = GetContext(db, 123, new() { { "id", 99 } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<NotFoundObjectResult>(context.Result);
@@ -108,14 +108,14 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ReturnsNotFound_WhenRunNotFound()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var badFeedback = new Feedback { FeedbackID = 99, RunID = 999 };
         db.Feedback.Add(badFeedback);
         db.SaveChanges();
 
         var context = GetContext(db, 123, new() { { "id", 99 } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<NotFoundObjectResult>(context.Result);
@@ -124,13 +124,13 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ReturnsForbid_WhenUserHasNoTrainingPlanEntry()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         db.UserTrainingPlan.RemoveRange(db.UserTrainingPlan);
         db.SaveChanges();
 
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<ForbidResult>(context.Result);
@@ -139,28 +139,28 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserHasWrongPermission()
     {
-        var db = GetDbContextWithData("Viewer");
+        var db = GetDbContextWithData("viewer");
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         var result = Assert.IsType<UnauthorizedObjectResult>(context.Result);
         var message = result.Value!.ToString()!;
         Assert.Contains("required permissions", message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Owner", message);
+        Assert.Contains("owner", message);
     }
 
     [Theory]
-    [InlineData("Owner")]
-    [InlineData("Editor")]
-    [InlineData("Commenter")]
+    [InlineData("owner")]
+    [InlineData("editor")]
+    [InlineData("commenter")]
     public async Task AllowsExecution_WhenPermissionIsValid(string validPermission)
     {
         var db = GetDbContextWithData(validPermission);
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner", "Editor", "Commenter");
+        var filter = new FeedbackPermissionAuthorize("owner", "editor", "commenter");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>
@@ -176,12 +176,12 @@ public class FeedbackPermissionTests
     [Fact]
     public async Task ResolvesFeedbackId_FromActionArgumentObjectProperty()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
 
         var feedbackInput = new { FeedbackID = 10 };
         var context = GetContext(db, 123, new() { { "model", feedbackInput } });
 
-        var filter = new FeedbackPermissionAuthorize("Owner");
+        var filter = new FeedbackPermissionAuthorize("owner");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>

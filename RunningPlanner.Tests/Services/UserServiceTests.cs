@@ -153,7 +153,7 @@ namespace RunningPlanner.Tests
             Assert.Equal("User added to training plan.", result.Message);
 
             _userTrainingPlanRepositoryMock.Verify(repo => repo.AddUserTrainingPlanAsync(
-                It.Is<UserTrainingPlan>(utp => utp.Permission == "Viewer")), Times.Once);
+                It.Is<UserTrainingPlan>(utp => utp.Permission == "viewer")), Times.Once);
 
             _userTrainingPlanRepositoryMock.Verify(repo => repo.UpdateUserTrainingPlanAsync(It.IsAny<UserTrainingPlan>()), Times.Never);
         }
@@ -210,9 +210,9 @@ namespace RunningPlanner.Tests
                 .ReturnsAsync(new TrainingPlan { TrainingPlanID = 1 });
 
             _userTrainingPlanRepositoryMock.Setup(repo => repo.GetUserTrainingPlanAsync(1, 1))
-                .ReturnsAsync(new UserTrainingPlan { UserID = 1, TrainingPlanID = 1, Permission = "Owner" });
+                .ReturnsAsync(new UserTrainingPlan { UserID = 1, TrainingPlanID = 1, Permission = "owner" });
 
-            var result = await _userService.AddUserToTrainingPlanAsync(1, 1, "Editor");
+            var result = await _userService.AddUserToTrainingPlanAsync(1, 1, "editor");
 
             Assert.False(result.Success);
             Assert.Equal("User already has Owner permission.", result.Message);
@@ -230,20 +230,20 @@ namespace RunningPlanner.Tests
             _trainingPlanRepositoryMock.Setup(repo => repo.GetTrainingPlanByIdAsync(1))
                 .ReturnsAsync(new TrainingPlan { TrainingPlanID = 1 });
 
-            var existingLink = new UserTrainingPlan { UserID = 1, TrainingPlanID = 1, Permission = "Viewer" };
+            var existingLink = new UserTrainingPlan { UserID = 1, TrainingPlanID = 1, Permission = "viewer" };
             _userTrainingPlanRepositoryMock.Setup(repo => repo.GetUserTrainingPlanAsync(1, 1))
                 .ReturnsAsync(existingLink);
 
             _userTrainingPlanRepositoryMock.Setup(repo => repo.UpdateUserTrainingPlanAsync(It.IsAny<UserTrainingPlan>()))
                 .ReturnsAsync((UserTrainingPlan updated) => updated);
 
-            var result = await _userService.AddUserToTrainingPlanAsync(1, 1, "Editor");
+            var result = await _userService.AddUserToTrainingPlanAsync(1, 1, "editor");
 
             Assert.True(result.Success);
             Assert.Equal("Permission updated.", result.Message);
 
             _userTrainingPlanRepositoryMock.Verify(repo => repo.UpdateUserTrainingPlanAsync(
-                It.Is<UserTrainingPlan>(utp => utp.Permission == "Editor")), Times.Once);
+                It.Is<UserTrainingPlan>(utp => utp.Permission == "editor")), Times.Once);
 
             _userTrainingPlanRepositoryMock.Verify(repo => repo.AddUserTrainingPlanAsync(It.IsAny<UserTrainingPlan>()), Times.Never);
         }

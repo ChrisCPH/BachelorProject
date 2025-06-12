@@ -72,10 +72,10 @@ public class ExercisePermissionTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserMissing()
     {
-        var db = GetDbContextWithData("Editor");
+        var db = GetDbContextWithData("editor");
         var context = GetContext(db, null, new() { { "id", 10 } });
 
-        var filter = new ExercisePermissionAuthorize("Editor");
+        var filter = new ExercisePermissionAuthorize("editor");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<UnauthorizedResult>(context.Result);
@@ -84,10 +84,10 @@ public class ExercisePermissionTests
     [Fact]
     public async Task ReturnsNotFound_WhenExerciseNotFound()
     {
-        var db = GetDbContextWithData("Editor");
+        var db = GetDbContextWithData("editor");
         var context = GetContext(db, 123, new() { { "id", 999 } });
 
-        var filter = new ExercisePermissionAuthorize("Editor");
+        var filter = new ExercisePermissionAuthorize("editor");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<NotFoundObjectResult>(context.Result);
@@ -96,28 +96,28 @@ public class ExercisePermissionTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserHasWrongPermission()
     {
-        var db = GetDbContextWithData("Viewer");
+        var db = GetDbContextWithData("viewer");
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new ExercisePermissionAuthorize("Editor");
+        var filter = new ExercisePermissionAuthorize("editor");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         var result = Assert.IsType<UnauthorizedObjectResult>(context.Result);
         var message = result.Value!.ToString()!;
         Assert.Contains("required permissions", message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Editor", message);
+        Assert.Contains("editor", message);
     }
 
     [Theory]
-    [InlineData("Owner")]
-    [InlineData("Editor")]
-    [InlineData("Commenter")]
+    [InlineData("owner")]
+    [InlineData("editor")]
+    [InlineData("commenter")]
     public async Task AllowsExecution_WhenPermissionIsValid(string validPermission)
     {
         var db = GetDbContextWithData(validPermission);
         var context = GetContext(db, 123, new() { { "id", 10 } });
 
-        var filter = new ExercisePermissionAuthorize("Owner", "Editor", "Commenter");
+        var filter = new ExercisePermissionAuthorize("owner", "editor", "commenter");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>
@@ -133,12 +133,12 @@ public class ExercisePermissionTests
     [Fact]
     public async Task ResolvesExerciseId_FromActionArgumentObjectProperty()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
 
         var exerciseInput = new { ExerciseID = 10 };
         var context = GetContext(db, 123, new() { { "model", exerciseInput } });
 
-        var filter = new ExercisePermissionAuthorize("Owner");
+        var filter = new ExercisePermissionAuthorize("owner");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>

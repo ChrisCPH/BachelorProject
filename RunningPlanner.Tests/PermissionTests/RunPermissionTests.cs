@@ -70,10 +70,10 @@ public class RunPermissionAuthorizeTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserMissing()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var context = GetContext(db, null, new() { { "id", 1 } });
 
-        var filter = new RunPermissionAuthorize("Owner");
+        var filter = new RunPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<UnauthorizedResult>(context.Result);
@@ -82,10 +82,10 @@ public class RunPermissionAuthorizeTests
     [Fact]
     public async Task ReturnsBadRequest_WhenRunIdMissing()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var context = GetContext(db, 123, new());
 
-        var filter = new RunPermissionAuthorize("Owner");
+        var filter = new RunPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         var result = Assert.IsType<BadRequestObjectResult>(context.Result);
@@ -95,10 +95,10 @@ public class RunPermissionAuthorizeTests
     [Fact]
     public async Task ReturnsNotFound_WhenRunNotFound()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         var context = GetContext(db, 123, new() { { "id", 99 } });
 
-        var filter = new RunPermissionAuthorize("Owner");
+        var filter = new RunPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         var result = Assert.IsType<NotFoundObjectResult>(context.Result);
@@ -108,13 +108,13 @@ public class RunPermissionAuthorizeTests
     [Fact]
     public async Task ReturnsForbid_WhenUserHasNoTrainingPlanEntry()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
         db.UserTrainingPlan.RemoveRange(db.UserTrainingPlan);
         db.SaveChanges();
 
         var context = GetContext(db, 123, new() { { "id", 1 } });
 
-        var filter = new RunPermissionAuthorize("Owner");
+        var filter = new RunPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         Assert.IsType<ForbidResult>(context.Result);
@@ -123,28 +123,28 @@ public class RunPermissionAuthorizeTests
     [Fact]
     public async Task ReturnsUnauthorized_WhenUserHasWrongPermission()
     {
-        var db = GetDbContextWithData("Viewer");
+        var db = GetDbContextWithData("viewer");
         var context = GetContext(db, 123, new() { { "id", 1 } });
 
-        var filter = new RunPermissionAuthorize("Owner");
+        var filter = new RunPermissionAuthorize("owner");
         await filter.OnActionExecutionAsync(context, () => Task.FromResult<ActionExecutedContext>(null!));
 
         var result = Assert.IsType<UnauthorizedObjectResult>(context.Result);
         var message = result.Value!.ToString()!;
         Assert.Contains("required permissions", message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Owner", message);
+        Assert.Contains("owner", message);
     }
 
     [Theory]
-    [InlineData("Owner")]
-    [InlineData("Editor")]
-    [InlineData("Commenter")]
+    [InlineData("owner")]
+    [InlineData("editor")]
+    [InlineData("commenter")]
     public async Task AllowsExecution_WhenPermissionIsValid(string validPermission)
     {
         var db = GetDbContextWithData(validPermission);
         var context = GetContext(db, 123, new() { { "id", 1 } });
 
-        var filter = new RunPermissionAuthorize("Owner", "Editor", "Commenter");
+        var filter = new RunPermissionAuthorize("owner", "editor", "commenter");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>
@@ -160,12 +160,12 @@ public class RunPermissionAuthorizeTests
     [Fact]
     public async Task ResolvesRunId_FromActionArgumentObjectProperty()
     {
-        var db = GetDbContextWithData("Owner");
+        var db = GetDbContextWithData("owner");
 
         var runInput = new { RunID = 1 };
         var context = GetContext(db, 123, new() { { "model", runInput } });
 
-        var filter = new RunPermissionAuthorize("Owner");
+        var filter = new RunPermissionAuthorize("owner");
 
         bool nextCalled = false;
         await filter.OnActionExecutionAsync(context, () =>

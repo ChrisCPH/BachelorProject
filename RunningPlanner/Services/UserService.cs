@@ -124,7 +124,7 @@ namespace RunningPlanner.Services
 
         public async Task<(bool Success, string Message)> AddUserToTrainingPlanAsync(int userId, int trainingPlanId, string permission)
         {
-            var validPermissions = new[] { "Owner", "Editor", "Commenter", "Viewer" };
+            var validPermissions = new[] { "owner", "editor", "commenter", "viewer" };
             var matchedPermission = validPermissions
                 .FirstOrDefault(p => p.Equals(permission, StringComparison.OrdinalIgnoreCase));
 
@@ -143,7 +143,7 @@ namespace RunningPlanner.Services
 
             if (existingLink != null)
             {
-                if (existingLink.Permission.Equals("Owner", StringComparison.OrdinalIgnoreCase))
+                if (existingLink.Permission.Equals("owner", StringComparison.OrdinalIgnoreCase))
                     return (false, "User already has Owner permission.");
 
                 existingLink.Permission = matchedPermission;
